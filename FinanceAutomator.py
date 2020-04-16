@@ -1,3 +1,6 @@
+import json
+from decimal import Decimal
+
 from Classes import Event
 
 
@@ -71,33 +74,83 @@ def clean_fragments(fragments_unclean):
     return fragments
 
 
-print("Give file path:")
+def sort_expenses(events):
+    negative_events = []
+    for event in events:
+        if event.amount.startswith("-"):
+            negative_events.append(event)
+    return negative_events
 
-filepath = input()
 
-events = []
-try:
-    with open(filepath, "r", encoding="iso-8859-1") as transactions_file:
-        all_lines = transactions_file.read().splitlines()
-        # Delete header row
-        lines = all_lines[1:]
+def sort_incomes(events):
+    positive_events = []
+    for event in events:
+        if not event.amount.startswith("-"):
+            positive_events.append(event)
+    return positive_events
 
-        for line in lines:
-            frags_unclean = line.split(";")
 
-            frags = clean_fragments(frags_unclean)
-            card_event = create_event(frags)
-            events.append(card_event)
+def count_total(list):
+    total = 0
+    for value in list:
+        total += Decimal(value.amount)
+    return total
 
-except FileNotFoundError:
-    print("No such file!")
 
-income = 0
-expenses = 0
-for event in events:
-    if event.amount.startswith("-"):
-        expenses -= round(float(event.amount))
-    else:
-        income += round(float(event.amount))
+def count_groceries(expenses):
+    global tags_object
+    total = 0
+    for expense in expenses:
+        name = expense.name.lower()
+        for tag in tags_object["grocery_tags"]:
+            if tag in name:
+                total += Decimal(expense.amount)
 
-print("Tulot", income, "Kulut", expenses)
+    return total
+
+
+def main():
+    print("Give file path:")
+    filepath = input()
+
+    events = []
+    try:
+        with open(filepath, "r", encoding="iso-8859-1") as transactions_file:
+            all_lines = transactions_file.read().splitlines()
+            # Delete header row
+            lines = all_lines[1:]
+
+            for line in lines:
+                frags_unclean = line.split(";")
+
+                frags = clean_fragments(frags_unclean)
+                card_event = create_event(frags)
+                events.append(card_event)
+
+    except FileNotFoundError:
+        print("No such file!")
+
+    expenses = sort_expenses(events)
+    incomes = sort_incomes(events)
+
+    total_expense = count_total(expenses)
+    total_income = count_total(incomes)
+    balance = total_income + total_expense
+    groceries = count_groceries(expenses)
+
+    print("Monthly report\n")
+
+    print("Total income of the month:", total_income)
+    print("Total expenses of the month:", total_expense)
+    print("Balance:", balance)
+
+    print("Expenses on")
+    print("Groceries:", groceries)
+
+
+with open("resources/tags", "r") as tags_file:
+    data = tags_file.read()
+
+    tags_object = json.loads(data)
+
+main()

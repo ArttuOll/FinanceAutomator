@@ -90,3 +90,7 @@ fabric.properties
 .idea/**/markdown-navigator/
 
 # End of https://www.gitignore.io/api/pycharm
+
+venv/
+FI7931311001173842_20200301_20200331.csv
+resources/
