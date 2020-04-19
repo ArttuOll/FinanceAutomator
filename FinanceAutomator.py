@@ -97,46 +97,44 @@ def count_total(list):
     return total
 
 
-def count_groceries(expenses):
+def count_expenses_by_tag(expenses, tag):
     global tags_object
     total = 0
     for expense in expenses:
         name = expense.name.lower()
-        for tag in tags_object["grocery_tags"]:
-            if tag in name:
+        for keyword in tags_object[tag]:
+            if keyword in name:
                 total += Decimal(expense.amount)
 
     return total
 
 
-def main():
-    print("Give file path:")
-    filepath = input()
+def count_income_by_tag(incomes, tag):
+    global tags_object
+    total = 0
+    for income in incomes:
+        name = income.name.lower()
+        for keyword in tags_object[tag]:
+            if keyword in name:
+                total += Decimal(income.amount)
 
-    events = []
-    try:
-        with open(filepath, "r", encoding="iso-8859-1") as transactions_file:
-            all_lines = transactions_file.read().splitlines()
-            # Delete header row
-            lines = all_lines[1:]
+    return total
 
-            for line in lines:
-                frags_unclean = line.split(";")
 
-                frags = clean_fragments(frags_unclean)
-                card_event = create_event(frags)
-                events.append(card_event)
-
-    except FileNotFoundError:
-        print("No such file!")
-
-    expenses = sort_expenses(events)
-    incomes = sort_incomes(events)
-
+def report():
     total_expense = count_total(expenses)
     total_income = count_total(incomes)
     balance = total_income + total_expense
-    groceries = count_groceries(expenses)
+
+    salary = count_income_by_tag(incomes, "salary")
+    benefits = count_income_by_tag(incomes, "benefit")
+    other_income = total_income - salary - benefits
+
+    groceries = count_expenses_by_tag(expenses, "grocery")
+    electricity = count_expenses_by_tag(expenses, "electricity")
+    rent = count_expenses_by_tag(expenses, "rent")
+    internet = count_expenses_by_tag(expenses, "internet")
+    other_expenses = total_expense - groceries - rent - electricity
 
     print("Monthly report\n")
 
@@ -144,8 +142,17 @@ def main():
     print("Total expenses of the month:", total_expense)
     print("Balance:", balance)
 
-    print("Expenses on")
+    print("\nSources of income:")
+    print("Salary:", salary)
+    print("Benefits:", benefits)
+    print("Other: ", other_income)
+
+    print("\nExpenses on")
     print("Groceries:", groceries)
+    print("Electricity:", electricity)
+    print("Rent:", rent)
+    print("Internet:", internet)
+    print("Other: ", other_expenses)
 
 
 with open("resources/tags", "r") as tags_file:
@@ -153,4 +160,27 @@ with open("resources/tags", "r") as tags_file:
 
     tags_object = json.loads(data)
 
-main()
+print("Give filepath:")
+filepath = input()
+
+events = []
+try:
+    with open(filepath, "r", encoding="iso-8859-1") as transactions_file:
+        all_lines = transactions_file.read().splitlines()
+        # Delete header row
+        lines = all_lines[1:]
+
+        for line in lines:
+            frags_unclean = line.split(";")
+
+            frags = clean_fragments(frags_unclean)
+            card_event = create_event(frags)
+            events.append(card_event)
+
+except FileNotFoundError:
+    print("No such file!")
+
+expenses = sort_expenses(events)
+incomes = sort_incomes(events)
+
+report()

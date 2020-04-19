@@ -1,23 +1,23 @@
 {
-  "grocery_tags": [
+  "grocery": [
     "market",
     "lidl",
     "compass group"
   ],
-  "electricity_tags": [
+  "electricity": [
     "sähkö",
     "energia"
   ],
-  "benefit_tags": [
+  "benefit": [
     "kela"
   ],
-  "salary_tags": [
+  "salary": [
     "osuma"
   ],
-  "atm_tags": [
-    "autom. nosto"
-  ],
-  "rent_tag": [
+  "rent": [
     "pekka rantala"
+  ],
+  "internet": [
+    "dna"
   ]
 }
