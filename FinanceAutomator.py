@@ -1,7 +1,18 @@
-import json
-from decimal import Decimal
+from model.Classes import Event, EventHandler
 
-from Classes import Event
+
+def clean_fragments(fragments_unclean):
+    fragments = []
+    for fragment in fragments_unclean:
+        fragment = fragment.strip("\"")
+
+        # Korvataan pilkut pisteillä
+        if "," in fragment:
+            fragment = fragment.replace(",", ".")
+
+        fragments.append(fragment)
+
+    return fragments
 
 
 def create_event(fragments):
@@ -60,86 +71,27 @@ def create_event(fragments):
         return mobile_event
 
 
-def clean_fragments(fragments_unclean):
-    fragments = []
-    for fragment in fragments_unclean:
-        fragment = fragment.strip("\"")
+def print_report():
+    global handler
 
-        # Korvataan pilkut pisteillä
-        if "," in fragment:
-            fragment = fragment.replace(",", ".")
-
-        fragments.append(fragment)
-
-    return fragments
-
-
-def sort_expenses(events):
-    negative_events = []
-    for event in events:
-        if event.amount.startswith("-"):
-            negative_events.append(event)
-    return negative_events
-
-
-def sort_incomes(events):
-    positive_events = []
-    for event in events:
-        if not event.amount.startswith("-"):
-            positive_events.append(event)
-    return positive_events
-
-
-def count_total(list):
-    total = 0
-    for value in list:
-        total += Decimal(value.amount)
-    return total
-
-
-def count_expenses_by_tag(expenses, tag):
-    global tags_object
-    total = 0
-    for expense in expenses:
-        name = expense.name.lower()
-        for keyword in tags_object[tag]:
-            if keyword in name:
-                total += Decimal(expense.amount)
-
-    return total
-
-
-def count_income_by_tag(incomes, tag):
-    global tags_object
-    total = 0
-    for income in incomes:
-        name = income.name.lower()
-        for keyword in tags_object[tag]:
-            if keyword in name:
-                total += Decimal(income.amount)
-
-    return total
-
-
-def report():
-    total_expense = count_total(expenses)
-    total_income = count_total(incomes)
-    balance = total_income + total_expense
-
-    salary = count_income_by_tag(incomes, "salary")
-    benefits = count_income_by_tag(incomes, "benefit")
+    total_income = handler.get_total(handler.incomes)
+    salary = handler.count_income_by_tag("salary")
+    benefits = handler.count_income_by_tag("benefit")
     other_income = total_income - salary - benefits
 
-    groceries = count_expenses_by_tag(expenses, "grocery")
-    electricity = count_expenses_by_tag(expenses, "electricity")
-    rent = count_expenses_by_tag(expenses, "rent")
-    internet = count_expenses_by_tag(expenses, "internet")
-    other_expenses = total_expense - groceries - rent - electricity
+    total_expenses = handler.get_total(handler.expenses)
+    groceries = handler.count_expenses_by_tag("grocery")
+    electricity = handler.count_expenses_by_tag("electricity")
+    rent = handler.count_expenses_by_tag("rent")
+    internet = handler.count_expenses_by_tag("internet")
+    other_expenses = total_expenses + groceries + rent + electricity + internet
+
+    balance = handler.get_balance()
 
     print("Monthly report\n")
 
     print("Total income of the month:", total_income)
-    print("Total expenses of the month:", total_expense)
+    print("Total expenses of the month:", total_expenses)
     print("Balance:", balance)
 
     print("\nSources of income:")
@@ -147,18 +99,13 @@ def report():
     print("Benefits:", benefits)
     print("Other: ", other_income)
 
-    print("\nExpenses on")
+    print("\nExpenses on:")
     print("Groceries:", groceries)
     print("Electricity:", electricity)
     print("Rent:", rent)
     print("Internet:", internet)
     print("Other: ", other_expenses)
 
-
-with open("resources/tags", "r") as tags_file:
-    data = tags_file.read()
-
-    tags_object = json.loads(data)
 
 print("Give filepath:")
 filepath = input()
@@ -174,13 +121,12 @@ try:
             frags_unclean = line.split(";")
 
             frags = clean_fragments(frags_unclean)
-            card_event = create_event(frags)
-            events.append(card_event)
+            event = create_event(frags)
+            events.append(event)
 
 except FileNotFoundError:
     print("No such file!")
 
-expenses = sort_expenses(events)
-incomes = sort_incomes(events)
+handler = EventHandler(events)
 
-report()
+print_report()
