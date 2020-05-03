@@ -1,13 +1,16 @@
+import datetime
 import json
 import os
 from decimal import Decimal
+
+import openpyxl
 
 
 class Event:
 
     def __init__(self, date: str, name: str, amount: str, event_type=None, location=None, refnumber=None,
                  cardnumber=None,
-                 message=None, salary_label=None, payment_number=None):
+                 message=None, salary_label=None, payment_number=None, category=None):
         self.date = date
         self.name = name
         self.amount = Decimal(amount)
@@ -129,3 +132,36 @@ class EventHandler:
             tags_object = json.loads(data)
 
         return tags_object
+
+
+class XlsxManager:
+
+    def __init__(self):
+        os.chdir("/home/bsuuv/Asiakirjat/")
+        self.workbook = openpyxl.load_workbook("talousseuranta_autom.xlsx")
+
+    def init_new_workbook(self):
+        current_month = datetime.datetime.today().month
+
+        workbook = openpyxl.load_workbook("talousseuranta_autom" + str(current_month - 1) + ".xlsx")
+
+        # Tallennetaan muutettu taulukko.
+        workbook.save("talousseuranta_autom" + str(current_month) + ".xlsx")
+
+        # Poistetaan kahden kuukauden takainen taulukko.
+        os.remove("talousseuranta_autom" + str(current_month - 2) + ".xlsx")
+
+    def write_month(self, values):
+        sheet = self.workbook["taloushistoria"]
+        current_month = datetime.datetime.today().month
+        month_column = chr(ord("A") + current_month)
+
+        # Oletetaan, että arvot ovat taulukon mukaisessa järjestyksessä.
+        for i in range(6, 10):
+            sheet[month_column + str(i)] = values[i - 6]
+        for i in range(12, 17):
+            sheet[month_column + str(i)] = values[i - 8]
+
+        sheet[month_column + str(18)] = values[9]
+
+        self.workbook.save("talousseuranta_autom.xlsx")

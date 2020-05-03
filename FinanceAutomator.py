@@ -1,4 +1,6 @@
-from model.Classes import Event, EventHandler
+import traceback
+
+from model.Classes import Event, EventHandler, XlsxManager
 
 
 def clean_fragments(fragments_unclean):
@@ -71,42 +73,6 @@ def create_event(fragments):
         return mobile_event
 
 
-def print_report():
-    global handler
-
-    total_income = handler.get_total(handler.incomes)
-    salary = handler.count_income_by_tag("salary")
-    benefits = handler.count_income_by_tag("benefit")
-    other_income = total_income - salary - benefits
-
-    total_expenses = handler.get_total(handler.expenses)
-    groceries = handler.count_expenses_by_tag("grocery")
-    electricity = handler.count_expenses_by_tag("electricity")
-    rent = handler.count_expenses_by_tag("rent")
-    internet = handler.count_expenses_by_tag("internet")
-    other_expenses = total_expenses + groceries + rent + electricity + internet
-
-    balance = handler.get_balance()
-
-    print("Monthly report\n")
-
-    print("Total income of the month:", total_income)
-    print("Total expenses of the month:", total_expenses)
-    print("Balance:", balance)
-
-    print("\nSources of income:")
-    print("Salary:", salary)
-    print("Benefits:", benefits)
-    print("Other: ", other_income)
-
-    print("\nExpenses on:")
-    print("Groceries:", groceries)
-    print("Electricity:", electricity)
-    print("Rent:", rent)
-    print("Internet:", internet)
-    print("Other: ", other_expenses)
-
-
 print("Give filepath:")
 filepath = input()
 
@@ -129,4 +95,27 @@ except FileNotFoundError:
 
 handler = EventHandler(events)
 
-print_report()
+total_income = handler.get_total(handler.incomes)
+salary = handler.count_income_by_tag("salary")
+benefits = handler.count_income_by_tag("benefit")
+other_income = total_income - salary - benefits
+
+total_expenses = handler.get_total(handler.expenses)
+groceries = handler.count_expenses_by_tag("grocery")
+electricity = handler.count_expenses_by_tag("electricity")
+rent = handler.count_expenses_by_tag("rent")
+internet = handler.count_expenses_by_tag("internet")
+other_expenses = total_expenses - groceries - rent - electricity - internet
+
+balance = handler.get_balance()
+
+values = [benefits, salary, other_income, total_income, groceries, electricity, rent, other_expenses,
+          total_expenses, balance]
+
+xlsxmanager = XlsxManager()
+try:
+    xlsxmanager.init_new_workbook()
+except FileNotFoundError:
+    print(traceback.format_exc())
+
+xlsxmanager.write_month(values)
