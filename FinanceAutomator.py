@@ -1,4 +1,4 @@
-import traceback
+#!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 
 from model.Classes import Event, EventHandler, XlsxManager
 
@@ -73,49 +73,62 @@ def create_event(fragments):
         return mobile_event
 
 
+def calculate_values():
+    handler = EventHandler(events)
+
+    total_income = handler.get_total(handler.incomes)
+    salary = handler.count_income_by_tag("salary")
+    benefits = handler.count_income_by_tag("benefit")
+    other_income = total_income - salary - benefits
+
+    total_expenses = handler.get_total(handler.expenses)
+    groceries = handler.count_expenses_by_tag("grocery")
+    electricity = handler.count_expenses_by_tag("electricity")
+    rent = handler.count_expenses_by_tag("rent")
+    internet = handler.count_expenses_by_tag("internet")
+    other_expenses = total_expenses - groceries - rent - electricity - internet
+
+    balance = handler.get_balance()
+
+    values = [benefits, salary, other_income, total_income, groceries, electricity, rent, other_expenses,
+              total_expenses, balance]
+    return values
+
+
+def extract_events_from_file(path):
+    events = []
+    try:
+        with open(path, "r", encoding="iso-8859-1") as transactions_file:
+            all_lines = transactions_file.read().splitlines()
+            # Delete header row
+            lines = all_lines[1:]
+
+            for line in lines:
+                frags_unclean = line.split(";")
+
+                frags = clean_fragments(frags_unclean)
+                event = create_event(frags)
+                events.append(event)
+
+    except FileNotFoundError:
+        print("No such file!")
+
+    return events
+
+
 print("Give filepath:")
 filepath = input()
 
-events = []
+events = extract_events_from_file(filepath)
+
+print("Calculating incomes and expenses of the month")
+values = calculate_values()
+
+print("Writing results to talousseuranta_autom.xlsx")
+
 try:
-    with open(filepath, "r", encoding="iso-8859-1") as transactions_file:
-        all_lines = transactions_file.read().splitlines()
-        # Delete header row
-        lines = all_lines[1:]
-
-        for line in lines:
-            frags_unclean = line.split(";")
-
-            frags = clean_fragments(frags_unclean)
-            event = create_event(frags)
-            events.append(event)
-
-except FileNotFoundError:
-    print("No such file!")
-
-handler = EventHandler(events)
-
-total_income = handler.get_total(handler.incomes)
-salary = handler.count_income_by_tag("salary")
-benefits = handler.count_income_by_tag("benefit")
-other_income = total_income - salary - benefits
-
-total_expenses = handler.get_total(handler.expenses)
-groceries = handler.count_expenses_by_tag("grocery")
-electricity = handler.count_expenses_by_tag("electricity")
-rent = handler.count_expenses_by_tag("rent")
-internet = handler.count_expenses_by_tag("internet")
-other_expenses = total_expenses - groceries - rent - electricity - internet
-
-balance = handler.get_balance()
-
-values = [benefits, salary, other_income, total_income, groceries, electricity, rent, other_expenses,
-          total_expenses, balance]
-
-xlsxmanager = XlsxManager()
-try:
+    xlsxmanager = XlsxManager()
     xlsxmanager.init_new_workbook()
-except FileNotFoundError:
-    print(traceback.format_exc())
-
-xlsxmanager.write_month(values)
+    xlsxmanager.write_month(values)
+except FileNotFoundError as e:
+    print(e.strerror, "\n\nHave you already run this program this month?")

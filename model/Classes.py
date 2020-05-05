@@ -137,24 +137,20 @@ class EventHandler:
 class XlsxManager:
 
     def __init__(self):
-        os.chdir("/home/bsuuv/Asiakirjat/")
-        self.workbook = openpyxl.load_workbook("talousseuranta_autom.xlsx")
+        os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
+        self.past_month = datetime.datetime.today().month - 1
+        self.workbook = openpyxl.load_workbook("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
 
     def init_new_workbook(self):
-        current_month = datetime.datetime.today().month
-
-        workbook = openpyxl.load_workbook("talousseuranta_autom" + str(current_month - 1) + ".xlsx")
-
         # Tallennetaan muutettu taulukko.
-        workbook.save("talousseuranta_autom" + str(current_month) + ".xlsx")
+        self.workbook.save("talousseuranta_autom" + str(self.past_month) + ".xlsx")
 
         # Poistetaan kahden kuukauden takainen taulukko.
-        os.remove("talousseuranta_autom" + str(current_month - 2) + ".xlsx")
+        os.remove("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
 
     def write_month(self, values):
         sheet = self.workbook["taloushistoria"]
-        current_month = datetime.datetime.today().month
-        month_column = chr(ord("A") + current_month)
+        month_column = chr(ord("A") + self.past_month)
 
         # Oletetaan, että arvot ovat taulukon mukaisessa järjestyksessä.
         for i in range(6, 10):
@@ -165,3 +161,6 @@ class XlsxManager:
         sheet[month_column + str(18)] = values[9]
 
         self.workbook.save("talousseuranta_autom.xlsx")
+
+
+
