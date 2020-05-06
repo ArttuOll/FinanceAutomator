@@ -1,6 +1,11 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
+import gettext
 
 from model.Classes import Event, EventHandler, XlsxManager
+
+translate = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
+translate.install()
+_ = translate.gettext
 
 
 def clean_fragments(fragments_unclean):
@@ -111,24 +116,24 @@ def extract_events_from_file(path):
                 events.append(event)
 
     except FileNotFoundError:
-        print("No such file!")
+        print(_("No such file!"))
 
     return events
 
 
-print("Give filepath:")
+print(_("Give filepath:"))
 filepath = input()
 
 events = extract_events_from_file(filepath)
 
-print("Calculating incomes and expenses of the month")
+print(_("Calculating incomes and expenses of the month"))
 values = calculate_values()
 
-print("Writing results to talousseuranta_autom.xlsx")
+print(_("Writing results to talousseuranta_autom.xlsx"))
 
 try:
     xlsxmanager = XlsxManager()
     xlsxmanager.init_new_workbook()
     xlsxmanager.write_month(values)
 except FileNotFoundError as e:
-    print(e.strerror, "\n\nHave you already run this program this month?")
+    print(e.strerror, _("\n\nHave you already run this program this month?"))
