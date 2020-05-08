@@ -1,11 +1,10 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import gettext
 
-from model.Classes import Event, EventHandler, XlsxManager
+from model.Classes import Event, EventHandler, XlsxManager, Dao
 
-translate = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
-translate.install()
-_ = translate.gettext
+fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
+_ = fi.gettext
 
 
 def clean_fragments(fragments_unclean):
@@ -121,19 +120,57 @@ def extract_events_from_file(path):
     return events
 
 
-print(_("Give filepath:"))
-filepath = input()
+def choose_language():
+    print("Choose language by typing FI for finnish or EN for english")
+    lang = input()
 
-events = extract_events_from_file(filepath)
+    return lang
 
-print(_("Calculating incomes and expenses of the month"))
+
+def choose_dir():
+    print(_("Path to directory containing your bank accounts events:"))
+    path = input()
+    return path
+
+
+def setup_settings():
+    global language
+    global transactions_path
+
+    settings = database.read_settings()
+    if settings is None:
+        print(_("It seems we'll have to do some settings before we begin\n"))
+        language = choose_language()
+        transactions_path = choose_dir()
+
+        database.write_settings(language, transactions_path)
+    else:
+        language, transactions_path = settings
+
+
+# TODO: luo mahdollisuus muuttaa asetuksia
+
+
+database = Dao("localhost", "root", "mariaonihana", "fa")
+language = ""
+transactions_path = ""
+
+setup_settings()
+
+if language == "FI":
+    fi.install()
+
+events = extract_events_from_file(transactions_path)
+
+print(_("Calculating incomes and expenses of the month..."))
 values = calculate_values()
 
-print(_("Writing results to talousseuranta_autom.xlsx"))
+print(_("Writing results to talousseuranta_autom.xlsx..."))
 
 try:
     xlsxmanager = XlsxManager()
     xlsxmanager.init_new_workbook()
     xlsxmanager.write_month(values)
 except FileNotFoundError as e:
+    # TODO: Tähän täytyy palata miettien ensimmäistä ajokertaa, jolloin edellisiä tiedostoja ei vielä ole
     print(e.strerror, _("\n\nHave you already run this program this month?"))

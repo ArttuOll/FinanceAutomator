@@ -4,6 +4,8 @@ import os
 from decimal import Decimal
 
 import openpyxl
+import pymysql
+from pymysql import DatabaseError
 
 
 class Event:
@@ -163,4 +165,35 @@ class XlsxManager:
         self.workbook.save("talousseuranta_autom.xlsx")
 
 
+class Dao:
 
+    def __init__(self, address, username, password, database):
+        self.address = address
+        self.username = username
+        self.password = password
+        self.database = database
+
+    def write_settings(self, lang, directory):
+        connection = pymysql.connect(self.address, self.username, self.password, self.database)
+
+        cursor = connection.cursor()
+        try:
+            cursor.execute("INSERT INTO settings VALUES (%s, %s)", (lang, directory))
+            connection.commit()
+        except DatabaseError as error:
+            print(error.args)
+            print("Mitään ei tallennettu")
+            connection.rollback()
+
+        connection.close()
+
+    def read_settings(self):
+        connection = pymysql.connect(self.address, self.username, self.password, self.database)
+
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM settings")
+
+        settings = cursor.fetchone()
+        connection.close()
+
+        return settings
