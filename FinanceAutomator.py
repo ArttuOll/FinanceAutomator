@@ -1,5 +1,8 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import gettext
+import os
+from os import listdir
+from os.path import join, isfile
 
 from model.Classes import Event, EventHandler, XlsxManager, Dao
 
@@ -99,11 +102,24 @@ def calculate_values():
     return values
 
 
+def get_filename_from_path(path):
+    while True:
+        file = [f for f in listdir(path) if isfile(join(path, f))]
+        if len(file) != 1:
+            print(_("Your transactions directory contains multiple files. It should only contain the latest one!"))
+            continue
+        else:
+            return file[0]
+
+
 def extract_events_from_file(path):
     events = []
     try:
+        file = get_filename_from_path(path)
+        path = os.path.join(path, file)
         with open(path, "r", encoding="iso-8859-1") as transactions_file:
             all_lines = transactions_file.read().splitlines()
+
             # Delete header row
             lines = all_lines[1:]
 
@@ -116,51 +132,80 @@ def extract_events_from_file(path):
 
     except FileNotFoundError:
         print(_("No such file!"))
+        return
 
     return events
 
 
 def choose_language():
-    print("Choose language by typing FI for finnish or EN for english")
-    lang = input()
+    while True:
+        print("Choose language by typing FI for finnish or EN for english")
+        lang = input()
+
+        if lang == "EN" or lang == "FI":
+            break
+        else:
+            print(_("Invalid language selection."))
 
     return lang
 
 
 def choose_dir():
-    print(_("Path to directory containing your bank accounts events:"))
-    path = input()
+    while True:
+        print(_("Path to directory containing your bank accounts events:"))
+        path = input()
+
+        if not os.path.exists(path):
+            print(_("Path does not exist."))
+            continue
+        elif os.path.isfile(path):
+            print(_("The path you gave was to a file, but a path to a directory is needed!"))
+            continue
+        else:
+            break
+
     return path
 
 
 def setup_settings():
     global language
-    global transactions_path
+    global transactions_dir
 
     settings = database.read_settings()
     if settings is None:
         print(_("It seems we'll have to do some settings before we begin\n"))
-        language = choose_language()
-        transactions_path = choose_dir()
-
-        database.write_settings(language, transactions_path)
+        choose_settings()
     else:
-        language, transactions_path = settings
+        print(_("Would you like to edit your settings? Type Y for yes or N for no."))
+        edit_settings = input()
+
+        if edit_settings == "Y":
+            choose_settings()
+            return
+        else:
+            language, transactions_dir = settings
 
 
-# TODO: luo mahdollisuus muuttaa asetuksia
+def choose_settings():
+    global language
+    global transactions_dir
+
+    language = choose_language()
+    transactions_dir = choose_dir()
+
+    database.write_settings(language, transactions_dir)
 
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
 language = ""
-transactions_path = ""
+transactions_dir = ""
 
 setup_settings()
 
 if language == "FI":
     fi.install()
 
-events = extract_events_from_file(transactions_path)
+events = extract_events_from_file(transactions_dir)
 
 print(_("Calculating incomes and expenses of the month..."))
 values = calculate_values()
@@ -169,8 +214,6 @@ print(_("Writing results to talousseuranta_autom.xlsx..."))
 
 try:
     xlsxmanager = XlsxManager()
-    xlsxmanager.init_new_workbook()
     xlsxmanager.write_month(values)
 except FileNotFoundError as e:
-    # TODO: Tähän täytyy palata miettien ensimmäistä ajokertaa, jolloin edellisiä tiedostoja ei vielä ole
     print(e.strerror, _("\n\nHave you already run this program this month?"))

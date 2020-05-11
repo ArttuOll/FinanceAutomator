@@ -1,11 +1,16 @@
 import datetime
+import gettext
 import json
 import os
 from decimal import Decimal
 
 import openpyxl
 import pymysql
+from openpyxl.styles import Font
 from pymysql import DatabaseError
+
+fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
+_ = fi.gettext
 
 
 class Event:
@@ -96,7 +101,8 @@ class EventHandler:
                 positive_events.append(event)
         return positive_events, negative_events
 
-    def get_total(self, events):
+    @staticmethod
+    def get_total(events):
         total = 0
         for event in events:
             total += event.amount
@@ -125,7 +131,8 @@ class EventHandler:
 
         return total
 
-    def __read_tags(self):
+    @staticmethod
+    def __read_tags():
         script_dir = os.path.dirname(__file__)
         relative_dir = "resources/tags"
         absolute_dir = os.path.join(script_dir, relative_dir)
@@ -141,17 +148,21 @@ class XlsxManager:
     def __init__(self):
         os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
         self.past_month = datetime.datetime.today().month - 1
-        self.workbook = openpyxl.load_workbook("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
 
-    def init_new_workbook(self):
-        # Tallennetaan muutettu taulukko.
-        self.workbook.save("talousseuranta_autom" + str(self.past_month) + ".xlsx")
+    def init_workbooks(self):
+        new_workbook = openpyxl.Workbook()
+        sheet = new_workbook.active
+        sheet.title = "taloushistoria"
 
-        # Poistetaan kahden kuukauden takainen taulukko.
-        os.remove("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
+        sheet["B1"] = "Taloushistoria"
+        title_font = Font(size=16, bold=True)
+        sheet["B1"].font = title_font
 
-    def write_month(self, values):
-        sheet = self.workbook["taloushistoria"]
+        # Ensimmäisellä ajokerralla luodaan toissakuukauden tiedosto, jotta write_month() voi toimia
+        # normaalisti
+        new_workbook.save("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
+
+    def __write_values_in_sheet(self, sheet, values):
         month_column = chr(ord("A") + self.past_month)
 
         # Oletetaan, että arvot ovat taulukon mukaisessa järjestyksessä.
@@ -162,7 +173,30 @@ class XlsxManager:
 
         sheet[month_column + str(18)] = values[9]
 
-        self.workbook.save("talousseuranta_autom.xlsx")
+    def write_month(self, values):
+        try:
+            # Avataan kahden kuukauden takainen tiedosto muokattavaksi
+            workbook = openpyxl.load_workbook("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
+        except FileNotFoundError:
+            # Jos tiedostoa ei ole, eli ohjelmaa suoritetaan ensimmäisen kerran,
+            # luodaan uusi ja kutsutaan metodia uudelleen
+            self.init_workbooks()
+            self.write_month(values)
+            return
+
+        sheet = workbook["taloushistoria"]
+
+        self.__write_values_in_sheet(sheet, values)
+
+        # Tallennetaan tiedosto uudella nimellä, edellinen jää varmuuskopioksi
+        workbook.save("talousseuranta_autom" + str(self.past_month) + ".xlsx")
+
+        # Poistetaan vanha varmuuskopio. Ensimmäisella ajokerralla kolmen kuukauden takaista tiedostoa
+        # ei löydy
+        try:
+            os.remove("talousseuranta_autom" + str(self.past_month - 2) + ".xlsx")
+        except FileNotFoundError:
+            pass
 
 
 class Dao:
@@ -178,6 +212,8 @@ class Dao:
 
         cursor = connection.cursor()
         try:
+            # Poistetaan edelliset asetukset ennen uusien tallentamista.
+            cursor.execute("DELETE FROM settings;")
             cursor.execute("INSERT INTO settings VALUES (%s, %s)", (lang, directory))
             connection.commit()
         except DatabaseError as error:
@@ -191,7 +227,7 @@ class Dao:
         connection = pymysql.connect(self.address, self.username, self.password, self.database)
 
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM settings")
+        cursor.execute("SELECT * FROM settings;")
 
         settings = cursor.fetchone()
         connection.close()
