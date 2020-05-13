@@ -4,7 +4,7 @@ import os
 from os import listdir
 from os.path import join, isfile
 
-from model.Classes import Event, EventHandler, XlsxManager, Dao
+from model.Classes import Event, EventHandler, XlsxManager, Dao, JsonManager
 
 fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
 _ = fi.gettext
@@ -81,7 +81,8 @@ def create_event(fragments):
 
 
 def calculate_values():
-    handler = EventHandler(events)
+    global jsonManager
+    handler = EventHandler(events, jsonManager.read_tags())
 
     total_income = handler.get_total(handler.incomes)
     salary = handler.count_income_by_tag("salary")
@@ -186,6 +187,52 @@ def setup_settings():
             language, transactions_dir = settings
 
 
+def categories_and_tags_to_dict(categories, tags):
+    dictionary = {}
+
+    categories_tags = zip(categories, tags)
+
+    for category, tags in categories_tags:
+        dictionary[category] = tags
+
+    return dictionary
+
+
+def set_categories_and_tags():
+    global jsonManager
+
+    categories = []
+
+    # Lista, joka sisältää listoja, joista jokaisessa on tiettyyn kategoriaan kuuluvat tunnisteet.
+    tags = []
+
+    while True:
+        print(_("Input category name. Type OK to finish setting up categories and tags."))
+        category_name = input()
+
+        if category_name == "OK":
+            break
+
+        categories.append(category_name)
+
+        tags_of_category = []
+        while True:
+            print(_("""Input tags, parts of the receiver/sender strings of the transaction that can be used to 
+            identify, which category the transaction belongs to. To finish inputting tags, type OK."""))
+            tag = input()
+
+            if tag == "OK":
+                break
+
+            tags_of_category.append(tag)
+
+        tags.append(tags_of_category)
+
+    dictionary = categories_and_tags_to_dict(categories, tags)
+
+    jsonManager.write_tags(dictionary)
+
+
 def choose_settings():
     global language
     global transactions_dir
@@ -193,10 +240,17 @@ def choose_settings():
     language = choose_language()
     transactions_dir = choose_dir()
 
+    print(_("Would you like to reset your categories and tags? Y for yes or N for no"))
+    reset = input()
+
+    if reset == "Y":
+        set_categories_and_tags()
+
     database.write_settings(language, transactions_dir)
 
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
+jsonManager = JsonManager()
 language = ""
 transactions_dir = ""
 
@@ -216,4 +270,4 @@ try:
     xlsxmanager = XlsxManager()
     xlsxmanager.write_month(values)
 except FileNotFoundError as e:
-    print(e.strerror, _("\n\nHave you already run this program this month?"))
+    print(e.strerror, _("\n\nFatal error"))

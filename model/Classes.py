@@ -13,6 +13,29 @@ fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
 _ = fi.gettext
 
 
+class JsonManager:
+
+    def __init__(self):
+        self.resources_dir = "resources"
+        self.tag_file_name = "tags.json"
+        self.self_dir = os.path.dirname(__file__)
+        self.relative_path = os.path.join(self.resources_dir, self.tag_file_name)
+        self.tag_file_path = os.path.join(self.self_dir, self.relative_path)
+
+    def read_tags(self):
+        with open(self.tag_file_path, "r") as tags_file:
+            data = tags_file.read()
+            tags_object = json.loads(data)
+
+        return tags_object
+
+    def write_tags(self, dictionary):
+        with open(self.tag_file_name, "w", encoding="UTF-8") as tags_file:
+            json.dump(dictionary, tags_file, ensure_ascii=False, indent=4)
+
+        os.rename(self.tag_file_name, os.path.join(self.self_dir, self.relative_path))
+
+
 class Event:
 
     def __init__(self, date: str, name: str, amount: str, event_type=None, location=None, refnumber=None,
@@ -86,9 +109,9 @@ class Event:
 
 class EventHandler:
 
-    def __init__(self, events):
+    def __init__(self, events, tags):
         self.events = events
-        self.tags = self.__read_tags()
+        self.tags = tags
         self.incomes, self.expenses = self.__sort_events()
 
     def __sort_events(self):
@@ -130,17 +153,6 @@ class EventHandler:
                     total += Decimal(income.amount)
 
         return total
-
-    @staticmethod
-    def __read_tags():
-        script_dir = os.path.dirname(__file__)
-        relative_dir = "resources/tags"
-        absolute_dir = os.path.join(script_dir, relative_dir)
-        with open(absolute_dir, "r") as tags_file:
-            data = tags_file.read()
-            tags_object = json.loads(data)
-
-        return tags_object
 
 
 class XlsxManager:
