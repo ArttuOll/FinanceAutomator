@@ -3,6 +3,8 @@ import gettext
 import json
 import os
 from decimal import Decimal
+from os import listdir
+from os.path import isfile, join
 
 import openpyxl
 import pymysql
@@ -11,6 +13,30 @@ from pymysql import DatabaseError
 
 fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
 _ = fi.gettext
+
+
+def clean_fragments(fragments_unclean):
+    fragments = []
+    for fragment in fragments_unclean:
+        fragment = fragment.strip("\"")
+
+        # Korvataan pilkut pisteillä
+        if "," in fragment:
+            fragment = fragment.replace(",", ".")
+
+        fragments.append(fragment)
+
+    return fragments
+
+
+def get_filename_from_path(path):
+    while True:
+        file = [f for f in listdir(path) if isfile(join(path, f))]
+        if len(file) != 1:
+            print(_("Your transactions directory contains multiple files. It should only contain the latest one!"))
+            continue
+        else:
+            return file[0]
 
 
 class JsonManager:
@@ -25,13 +51,13 @@ class JsonManager:
     def read_tags(self):
         with open(self.tag_file_path, "r") as tags_file:
             data = tags_file.read()
-            tags_object = json.loads(data)
+            categories_tags_object = json.loads(data)
 
-        return tags_object
+        return categories_tags_object
 
     def write_tags(self, dictionary):
-        with open(self.tag_file_name, "w", encoding="UTF-8") as tags_file:
-            json.dump(dictionary, tags_file, ensure_ascii=False, indent=4)
+        with open(self.tag_file_name, "w", encoding="UTF-8") as categories_tags_file:
+            json.dump(dictionary, categories_tags_file, ensure_ascii=False, indent=4)
 
         os.rename(self.tag_file_name, os.path.join(self.self_dir, self.relative_path))
 
@@ -109,15 +135,16 @@ class Event:
 
 class EventHandler:
 
-    def __init__(self, events, tags):
-        self.events = events
-        self.tags = tags
-        self.incomes, self.expenses = self.__sort_events()
+    def __init__(self):
+        self.events = []
+        self.categories_tags_dict = None
+        self.incomes, self.expenses = self.__sort_events(self.events)
 
-    def __sort_events(self):
+    @staticmethod
+    def __sort_events(events):
         negative_events = []
         positive_events = []
-        for event in self.events:
+        for event in events:
             if event.amount < 0:
                 negative_events.append(event)
             else:
@@ -125,34 +152,152 @@ class EventHandler:
         return positive_events, negative_events
 
     @staticmethod
-    def get_total(events):
+    def __count_sum_of_events(events):
         total = 0
         for event in events:
             total += event.amount
         return total
 
-    def get_balance(self):
-        return self.get_total(self.incomes) + self.get_total(self.expenses)
+    def __get_balance(self):
+        return self.__count_sum_of_events(self.incomes) + self.__count_sum_of_events(self.expenses)
 
-    def count_expenses_by_tag(self, tag):
-        total = 0
+    def __count_expenses_by_category(self):
+        categories_values = {}
         for expense in self.expenses:
             name = expense.name.lower()
-            for keyword in self.tags[tag]:
-                if keyword in name:
-                    total += Decimal(expense.amount)
+            for category in self.categories_tags_dict:
+                total = 0
+                for tag in category:
+                    if tag in name:
+                        total += Decimal(expense.amount)
+                categories_values[category] = total
 
-        return total
+        return categories_values
 
-    def count_income_by_tag(self, tag):
-        total = 0
-        for income in self.incomes:
-            name = income.name.lower()
-            for keyword in self.tags[tag]:
-                if keyword in name:
-                    total += Decimal(income.amount)
+    def __count_income_by_category(self):
+        categories_values = {}
+        for income_event in self.incomes:
+            name = income_event.name.lower()
+            for category in self.categories_tags_dict:
+                total = 0
+                for tag in category:
+                    if tag in name:
+                        total += Decimal(income_event.amount)
+                categories_values[category] = total
 
-        return total
+        return categories_values
+
+    def __create_event(self, fragments):
+        if fragments[2] == "KORTTIOSTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            location = fragments[3]
+            card_event = Event.card_payment(date=date, name=name, amount=amount, location=location)
+
+            self.events.append(card_event)
+            return
+
+        elif fragments[2] == "PALKKA":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            salary_label = fragments[3]
+            salary_event = Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
+
+            self.events.append(salary_event)
+            return
+
+        elif fragments[2] == "AUTOM. NOSTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            cardnumber = fragments[3]
+            atm_event = Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
+
+            self.events.append(atm_event)
+            return
+
+        elif fragments[2] == "TILISIIRTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            refnumber = fragments[3]
+            transfer_event = Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
+
+            self.events.append(transfer_event)
+            return
+
+        elif fragments[2] == "VERKKOPANKKI":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            message = fragments[3]
+            online_event = Event.online_bank(date=date, name=name, amount=amount, message=message)
+
+            self.events.append(online_event)
+            return
+
+        elif fragments[2] == "SEPA PIKA":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            payment_number = fragments[3]
+            mobile_event = Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
+
+            self.events.append(mobile_event)
+            return
+
+    def calculate_values_by_category(self):
+        income_by_category = self.__count_income_by_category()
+
+        # Lasketaan kokonaistulot ja muut tulot
+        total_income = self.__count_sum_of_events(self.incomes)
+        income_by_category[_("Total income")] = total_income
+
+        other_income = total_income
+        for category in income_by_category:
+            other_income -= income_by_category[category]
+
+        income_by_category[_("Other income")] = other_income
+
+        # Lasketaan kokonaismenot ja muut menot
+        expenses_by_category = self.__count_expenses_by_category()
+
+        total_expenses = self.__count_sum_of_events(self.expenses)
+        expenses_by_category[_("Total expenses")] = total_expenses
+
+        other_expenses = total_expenses
+        for category in expenses_by_category:
+            other_expenses -= expenses_by_category[category]
+
+        income_by_category[_("Other expenses")] = other_income
+
+        # Yhdistetään molemmat sanakirjat yhdeksi, ottaen myös taseen mukaan
+        values = {**income_by_category, **expenses_by_category, "Balance": self.__get_balance()}
+
+        # Järjestetään sanakirja arvojen mukaan
+        return {k: v for k, v in sorted(values.items(), key=lambda item: item[1])}
+
+    def __extract_events_from_file(self, path):
+        try:
+            file = get_filename_from_path(path)
+            path = os.path.join(path, file)
+            with open(path, "r", encoding="iso-8859-1") as transactions_file:
+                all_lines = transactions_file.read().splitlines()
+
+                # Delete header row
+                lines = all_lines[1:]
+
+                for line in lines:
+                    frags_unclean = line.split(";")
+
+                    frags = clean_fragments(frags_unclean)
+                    self.__create_event(frags)
+
+        except FileNotFoundError:
+            print(_("No such file!"))
+            return
 
 
 class XlsxManager:
@@ -160,6 +305,15 @@ class XlsxManager:
     def __init__(self):
         os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
         self.past_month = datetime.datetime.today().month - 1
+
+    @staticmethod
+    def __write_months_in_sheet(sheet):
+        months = [_("Tammikuu"), _("Helmikuu"), _("Maaliskuu"), _("Huhtikuu"), _("Toukokuu"), _("Kesäkuu"),
+                  _("Heinäkuu"), _("Elokuu"), _("Syyskuu"), _("Lokakuu"), _("Marraskuu"), _("Joulukuu")]
+
+        for i in range(len(months)):
+            month_column = chr(ord("B") + i)
+            sheet[month_column + str(5)] = months[i]
 
     def init_workbooks(self):
         new_workbook = openpyxl.Workbook()
@@ -170,22 +324,19 @@ class XlsxManager:
         title_font = Font(size=16, bold=True)
         sheet["B1"].font = title_font
 
+        self.__write_months_in_sheet(sheet)
+
         # Ensimmäisellä ajokerralla luodaan toissakuukauden tiedosto, jotta write_month() voi toimia
         # normaalisti
         new_workbook.save("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
 
-    def __write_values_in_sheet(self, sheet, values):
+    def __write_values_in_sheet(self, sheet, values: list):
         month_column = chr(ord("A") + self.past_month)
 
-        # Oletetaan, että arvot ovat taulukon mukaisessa järjestyksessä.
-        for i in range(6, 10):
-            sheet[month_column + str(i)] = values[i - 6]
-        for i in range(12, 17):
-            sheet[month_column + str(i)] = values[i - 8]
+        for i in range(len(values)):
+            sheet[month_column + str(i + 6)] = values[i]
 
-        sheet[month_column + str(18)] = values[9]
-
-    def write_month(self, values):
+    def write_month(self, categories_values: dict):
         try:
             # Avataan kahden kuukauden takainen tiedosto muokattavaksi
             workbook = openpyxl.load_workbook("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
@@ -193,12 +344,13 @@ class XlsxManager:
             # Jos tiedostoa ei ole, eli ohjelmaa suoritetaan ensimmäisen kerran,
             # luodaan uusi ja kutsutaan metodia uudelleen
             self.init_workbooks()
-            self.write_month(values)
+            self.write_month(categories_values)
             return
 
         sheet = workbook["taloushistoria"]
 
-        self.__write_values_in_sheet(sheet, values)
+        self.__write_categories_in_sheet(sheet, list(categories_values.keys()))
+        self.__write_values_in_sheet(sheet, list(categories_values.values()))
 
         # Tallennetaan tiedosto uudella nimellä, edellinen jää varmuuskopioksi
         workbook.save("talousseuranta_autom" + str(self.past_month) + ".xlsx")
@@ -209,6 +361,11 @@ class XlsxManager:
             os.remove("talousseuranta_autom" + str(self.past_month - 2) + ".xlsx")
         except FileNotFoundError:
             pass
+
+    @staticmethod
+    def __write_categories_in_sheet(sheet, categories):
+        for i in range(len(categories)):
+            sheet["A" + str(i + 6)] = categories[i]
 
 
 class Dao:

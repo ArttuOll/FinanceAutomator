@@ -31,24 +31,24 @@ def test_sort_incomes(handler):
 
 
 def test_addition_minusminus(handler):
-    total_expenses = handler.get_total(handler.expenses)
+    total_expenses = handler.__count_sum_of_events(handler.expenses)
     expected = -35.25
     assert total_expenses == expected
 
 
 def test_addition_plusplus(handler):
-    total_incomes = handler.get_total(handler.incomes)
+    total_incomes = handler.__count_sum_of_events(handler.incomes)
     expected = 115.75
     assert total_incomes == expected
 
 
 def test_addition_plusminus(handler):
-    balance = handler.get_balance()
+    balance = handler.__get_balance()
     expected = Decimal(80.5)
     assert balance == expected
 
 
 def test_calculate_by_tag(handler):
-    salary = handler.count_income_by_tag("salary")
+    salary = handler.__count_income_by_category("salary")
     expected = Decimal(115.75)
     assert salary == expected

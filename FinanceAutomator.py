@@ -1,141 +1,22 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import gettext
 import os
-from os import listdir
-from os.path import join, isfile
 
-from model.Classes import Event, EventHandler, XlsxManager, Dao, JsonManager
+from model.Classes import XlsxManager, Dao, JsonManager, EventHandler
 
 fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
 _ = fi.gettext
 
 
-def clean_fragments(fragments_unclean):
-    fragments = []
-    for fragment in fragments_unclean:
-        fragment = fragment.strip("\"")
+def lists_to_dict(categories, tags):
+    dictionary = {}
 
-        # Korvataan pilkut pisteillä
-        if "," in fragment:
-            fragment = fragment.replace(",", ".")
+    categories_tags = zip(categories, tags)
 
-        fragments.append(fragment)
+    for category, tags in categories_tags:
+        dictionary[category] = tags
 
-    return fragments
-
-
-def create_event(fragments):
-    if fragments[2] == "KORTTIOSTO":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        location = fragments[3]
-        card_event = Event.card_payment(date=date, name=name, amount=amount, location=location)
-
-        return card_event
-
-    elif fragments[2] == "PALKKA":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        salary_label = fragments[3]
-        salary_event = Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
-
-        return salary_event
-
-    elif fragments[2] == "AUTOM. NOSTO":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        cardnumber = fragments[3]
-        atm_event = Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
-
-        return atm_event
-
-    elif fragments[2] == "TILISIIRTO":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        refnumber = fragments[3]
-        transfer_evet = Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
-
-        return transfer_evet
-
-    elif fragments[2] == "VERKKOPANKKI":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        message = fragments[3]
-        online_event = Event.online_bank(date=date, name=name, amount=amount, message=message)
-
-        return online_event
-
-    elif fragments[2] == "SEPA PIKA":
-        date = fragments[0]
-        name = fragments[1]
-        amount = fragments[4]
-        payment_number = fragments[3]
-        mobile_event = Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
-
-        return mobile_event
-
-
-def calculate_values():
-    global jsonManager
-    handler = EventHandler(events, jsonManager.read_tags())
-
-    total_income = handler.get_total(handler.incomes)
-    salary = handler.count_income_by_tag("salary")
-    benefits = handler.count_income_by_tag("benefit")
-    other_income = total_income - salary - benefits
-
-    total_expenses = handler.get_total(handler.expenses)
-    groceries = handler.count_expenses_by_tag("grocery")
-    electricity = handler.count_expenses_by_tag("electricity")
-    rent = handler.count_expenses_by_tag("rent")
-    internet = handler.count_expenses_by_tag("internet")
-    other_expenses = total_expenses - groceries - rent - electricity - internet
-
-    balance = handler.get_balance()
-
-    values = [benefits, salary, other_income, total_income, groceries, electricity, rent, other_expenses,
-              total_expenses, balance]
-    return values
-
-
-def get_filename_from_path(path):
-    while True:
-        file = [f for f in listdir(path) if isfile(join(path, f))]
-        if len(file) != 1:
-            print(_("Your transactions directory contains multiple files. It should only contain the latest one!"))
-            continue
-        else:
-            return file[0]
-
-
-def extract_events_from_file(path):
-    events = []
-    try:
-        file = get_filename_from_path(path)
-        path = os.path.join(path, file)
-        with open(path, "r", encoding="iso-8859-1") as transactions_file:
-            all_lines = transactions_file.read().splitlines()
-
-            # Delete header row
-            lines = all_lines[1:]
-
-            for line in lines:
-                frags_unclean = line.split(";")
-
-                frags = clean_fragments(frags_unclean)
-                event = create_event(frags)
-                events.append(event)
-
-    except FileNotFoundError:
-        print(_("No such file!"))
-        return
-
-    return events
+    return dictionary
 
 
 def choose_language():
@@ -187,19 +68,9 @@ def setup_settings():
             language, transactions_dir = settings
 
 
-def categories_and_tags_to_dict(categories, tags):
-    dictionary = {}
-
-    categories_tags = zip(categories, tags)
-
-    for category, tags in categories_tags:
-        dictionary[category] = tags
-
-    return dictionary
-
-
 def set_categories_and_tags():
     global jsonManager
+    global eventhandler
 
     categories = []
 
@@ -228,8 +99,9 @@ def set_categories_and_tags():
 
         tags.append(tags_of_category)
 
-    dictionary = categories_and_tags_to_dict(categories, tags)
+    dictionary = lists_to_dict(categories, tags)
 
+    eventhandler.categories_tags_dict = dictionary
     jsonManager.write_tags(dictionary)
 
 
@@ -251,6 +123,8 @@ def choose_settings():
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
 jsonManager = JsonManager()
+eventhandler = EventHandler()
+
 language = ""
 transactions_dir = ""
 
@@ -259,15 +133,13 @@ setup_settings()
 if language == "FI":
     fi.install()
 
-events = extract_events_from_file(transactions_dir)
-
 print(_("Calculating incomes and expenses of the month..."))
-values = calculate_values()
+values_by_category = eventhandler.calculate_values_by_category()
 
 print(_("Writing results to talousseuranta_autom.xlsx..."))
 
 try:
     xlsxmanager = XlsxManager()
-    xlsxmanager.write_month(values)
+    xlsxmanager.write_month(values_by_category)
 except FileNotFoundError as e:
     print(e.strerror, _("\n\nFatal error"))
