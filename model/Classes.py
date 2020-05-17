@@ -2,8 +2,6 @@ import datetime
 import json
 import os
 from decimal import Decimal
-from os import listdir
-from os.path import isfile, join
 
 import openpyxl
 import pymysql
@@ -24,16 +22,6 @@ def clean_fragments(fragments_unclean):
         fragments.append(fragment)
 
     return fragments
-
-
-def get_filename_from_path(path):
-    # TODO: poista uloin silmukka
-    while True:
-        file = [f for f in listdir(path) if isfile(join(path, f))]
-        if len(file) != 1:
-            print("Your transactions directory contains multiple files. It should only contain the latest one!")
-        else:
-            return file[0]
 
 
 class JsonManager:
@@ -220,8 +208,6 @@ class EventExtractor:
 
     def extract_events_from_file(self, path):
         try:
-            file = get_filename_from_path(path)
-            path = os.path.join(path, file)
             events = []
             with open(path, "r", encoding="iso-8859-1") as transactions_file:
                 all_lines = transactions_file.read().splitlines()

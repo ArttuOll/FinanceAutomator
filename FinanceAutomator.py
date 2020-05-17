@@ -1,5 +1,7 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import os
+from os import listdir
+from os.path import isfile, join
 
 from model.Classes import XlsxManager, Dao, JsonManager, EventCalculator, EventExtractor
 
@@ -19,6 +21,7 @@ def choose_dir():
     while True:
         print("Path to directory containing your bank accounts events:")
         path = input()
+        transactions_file_name = ""
 
         if not os.path.exists(path):
             print("Path does not exist.")
@@ -27,9 +30,15 @@ def choose_dir():
             print("The path you gave was to a file, but a path to a directory is needed!")
             continue
         else:
-            break
+            file = [f for f in listdir(path) if isfile(join(path, f))]
+            if len(file) != 1:
+                print("Your transactions directory contains multiple files. It should only contain one!")
+                continue
+            else:
+                transactions_file_name = file[0]
+                break
 
-    return path
+    return os.path.join(path, transactions_file_name)
 
 
 def check_settings():
