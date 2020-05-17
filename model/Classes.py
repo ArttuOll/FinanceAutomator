@@ -1,5 +1,4 @@
 import datetime
-import gettext
 import json
 import os
 from decimal import Decimal
@@ -10,9 +9,6 @@ import openpyxl
 import pymysql
 from openpyxl.styles import Font
 from pymysql import DatabaseError
-
-fi = gettext.translation("fi_FI", localedir="locale", languages=["fi"])
-_ = fi.gettext
 
 
 def clean_fragments(fragments_unclean):
@@ -33,7 +29,7 @@ def get_filename_from_path(path):
     while True:
         file = [f for f in listdir(path) if isfile(join(path, f))]
         if len(file) != 1:
-            print(_("Your transactions directory contains multiple files. It should only contain the latest one!"))
+            print("Your transactions directory contains multiple files. It should only contain the latest one!")
             continue
         else:
             return file[0]
@@ -253,25 +249,25 @@ class EventHandler:
 
         # Lasketaan kokonaistulot ja muut tulot
         total_income = self.__count_sum_of_events(self.incomes)
-        income_by_category[_("Total income")] = total_income
+        income_by_category["Total income"] = total_income
 
         other_income = total_income
         for category in income_by_category:
             other_income -= income_by_category[category]
 
-        income_by_category[_("Other income")] = other_income
+        income_by_category["Other income"] = other_income
 
         # Lasketaan kokonaismenot ja muut menot
         expenses_by_category = self.__count_expenses_by_category()
 
         total_expenses = self.__count_sum_of_events(self.expenses)
-        expenses_by_category[_("Total expenses")] = total_expenses
+        expenses_by_category["Total expenses"] = total_expenses
 
         other_expenses = total_expenses
         for category in expenses_by_category:
             other_expenses -= expenses_by_category[category]
 
-        income_by_category[_("Other expenses")] = other_income
+        income_by_category["Other expenses"] = other_income
 
         # Yhdistetään molemmat sanakirjat yhdeksi, ottaen myös taseen mukaan
         values = {**income_by_category, **expenses_by_category, "Balance": self.__get_balance()}
@@ -296,7 +292,7 @@ class EventHandler:
                     self.__create_event(frags)
 
         except FileNotFoundError:
-            print(_("No such file!"))
+            print("No such file!")
             return
 
 
@@ -308,8 +304,8 @@ class XlsxManager:
 
     @staticmethod
     def __write_months_in_sheet(sheet):
-        months = [_("Tammikuu"), _("Helmikuu"), _("Maaliskuu"), _("Huhtikuu"), _("Toukokuu"), _("Kesäkuu"),
-                  _("Heinäkuu"), _("Elokuu"), _("Syyskuu"), _("Lokakuu"), _("Marraskuu"), _("Joulukuu")]
+        months = ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu",
+                  "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"]
 
         for i in range(len(months)):
             month_column = chr(ord("B") + i)
@@ -376,14 +372,14 @@ class Dao:
         self.password = password
         self.database = database
 
-    def write_settings(self, lang, directory):
+    def write_settings(self, directory):
         connection = pymysql.connect(self.address, self.username, self.password, self.database)
 
         cursor = connection.cursor()
         try:
             # Poistetaan edelliset asetukset ennen uusien tallentamista.
             cursor.execute("DELETE FROM settings;")
-            cursor.execute("INSERT INTO settings VALUES (%s, %s)", (lang, directory))
+            cursor.execute("INSERT INTO settings VALUES %s", directory)
             connection.commit()
         except DatabaseError as error:
             print(error.args)
