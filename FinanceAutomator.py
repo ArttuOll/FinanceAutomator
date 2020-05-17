@@ -1,7 +1,7 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import os
 
-from model.Classes import XlsxManager, Dao, JsonManager, EventHandler
+from model.Classes import XlsxManager, Dao, JsonManager, EventCalculator, EventExtractor
 
 
 def lists_to_dict(categories, tags):
@@ -32,8 +32,7 @@ def choose_dir():
     return path
 
 
-def setup_settings():
-    global language
+def check_settings():
     global transactions_dir
 
     settings = database.read_settings()
@@ -48,12 +47,12 @@ def setup_settings():
             choose_settings()
             return
         else:
-            language, transactions_dir = settings
+            transactions_dir = settings[0]
 
 
 def set_categories_and_tags():
-    global jsonManager
-    global eventhandler
+    global jsonmanager
+    global eventcalc
 
     categories = []
 
@@ -82,16 +81,14 @@ def set_categories_and_tags():
 
         tags.append(tags_of_category)
 
-    dictionary = lists_to_dict(categories, tags)
-
-    eventhandler.categories_tags_dict = dictionary
-    jsonManager.write_tags(dictionary)
+    return lists_to_dict(categories, tags)
 
 
 def choose_settings():
     global transactions_dir
 
     transactions_dir = choose_dir()
+    database.write_settings(transactions_dir)
 
     print("Would you like to reset your categories and tags? Y for yes or N for no")
     reset = input()
@@ -99,21 +96,23 @@ def choose_settings():
     if reset == "Y":
         set_categories_and_tags()
 
-    database.write_settings(transactions_dir)
-
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
-jsonManager = JsonManager()
-eventhandler = EventHandler()
+jsonmanager = JsonManager()
+eventext = EventExtractor()
 
-language = ""
 transactions_dir = ""
+categories_tags_dict = {}
 
-setup_settings()
+check_settings()
+
+eventcalc = EventCalculator(eventext.extract_events_from_file(transactions_dir),
+                            categories_tags_dict)
+jsonmanager.write_tags(categories_tags_dict)
 
 print("Calculating incomes and expenses of the month...")
 # TODO: omaa syötettyä kategoriaa ei ilmesty tähän sanakirjaan
-values_by_category = eventhandler.calculate_values_by_category()
+values_by_category = eventcalc.calculate_values_by_category()
 
 print("Writing results to talousseuranta_autom.xlsx...")
 

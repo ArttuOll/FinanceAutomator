@@ -15,6 +15,7 @@ def clean_fragments(fragments_unclean):
     fragments = []
     for fragment in fragments_unclean:
         fragment = fragment.strip("\"")
+        fragment = fragment.strip("\'")
 
         # Korvataan pilkut pisteillä
         if "," in fragment:
@@ -26,11 +27,11 @@ def clean_fragments(fragments_unclean):
 
 
 def get_filename_from_path(path):
+    # TODO: poista uloin silmukka
     while True:
         file = [f for f in listdir(path) if isfile(join(path, f))]
         if len(file) != 1:
             print("Your transactions directory contains multiple files. It should only contain the latest one!")
-            continue
         else:
             return file[0]
 
@@ -129,11 +130,11 @@ class Event:
         return cls(date=date, name=name, amount=amount, event_type=event_type, payment_number=payment_number)
 
 
-class EventHandler:
+class EventCalculator:
 
-    def __init__(self):
-        self.events = []
-        self.categories_tags_dict = None
+    def __init__(self, events, categories_tags_dict):
+        self.events = events
+        self.categories_tags_dict = categories_tags_dict
         self.incomes, self.expenses = self.__sort_events(self.events)
 
     @staticmethod
@@ -183,67 +184,6 @@ class EventHandler:
 
         return categories_values
 
-    def __create_event(self, fragments):
-        if fragments[2] == "KORTTIOSTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            location = fragments[3]
-            card_event = Event.card_payment(date=date, name=name, amount=amount, location=location)
-
-            self.events.append(card_event)
-            return
-
-        elif fragments[2] == "PALKKA":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            salary_label = fragments[3]
-            salary_event = Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
-
-            self.events.append(salary_event)
-            return
-
-        elif fragments[2] == "AUTOM. NOSTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            cardnumber = fragments[3]
-            atm_event = Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
-
-            self.events.append(atm_event)
-            return
-
-        elif fragments[2] == "TILISIIRTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            refnumber = fragments[3]
-            transfer_event = Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
-
-            self.events.append(transfer_event)
-            return
-
-        elif fragments[2] == "VERKKOPANKKI":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            message = fragments[3]
-            online_event = Event.online_bank(date=date, name=name, amount=amount, message=message)
-
-            self.events.append(online_event)
-            return
-
-        elif fragments[2] == "SEPA PIKA":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            payment_number = fragments[3]
-            mobile_event = Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
-
-            self.events.append(mobile_event)
-            return
-
     def calculate_values_by_category(self):
         income_by_category = self.__count_income_by_category()
 
@@ -275,10 +215,14 @@ class EventHandler:
         # Järjestetään sanakirja arvojen mukaan
         return {k: v for k, v in sorted(values.items(), key=lambda item: item[1])}
 
-    def __extract_events_from_file(self, path):
+
+class EventExtractor:
+
+    def extract_events_from_file(self, path):
         try:
             file = get_filename_from_path(path)
             path = os.path.join(path, file)
+            events = []
             with open(path, "r", encoding="iso-8859-1") as transactions_file:
                 all_lines = transactions_file.read().splitlines()
 
@@ -289,11 +233,63 @@ class EventHandler:
                     frags_unclean = line.split(";")
 
                     frags = clean_fragments(frags_unclean)
-                    self.__create_event(frags)
+                    events.append(self.__create_event(frags))
+
+            return events
 
         except FileNotFoundError:
             print("No such file!")
             return
+
+    @staticmethod
+    def __create_event(fragments):
+        if fragments[2] == "KORTTIOSTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            location = fragments[3]
+
+            return Event.card_payment(date=date, name=name, amount=amount, location=location)
+
+        elif fragments[2] == "PALKKA":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            salary_label = fragments[3]
+
+            return Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
+
+        elif fragments[2] == "AUTOM. NOSTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            cardnumber = fragments[3]
+
+            return Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
+
+        elif fragments[2] == "TILISIIRTO":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            refnumber = fragments[3]
+
+            return Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
+
+        elif fragments[2] == "VERKKOPANKKI":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            message = fragments[3]
+
+            return Event.online_bank(date=date, name=name, amount=amount, message=message)
+
+        elif fragments[2] == "SEPA PIKA":
+            date = fragments[0]
+            name = fragments[1]
+            amount = fragments[4]
+            payment_number = fragments[3]
+
+            return Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
 
 
 class XlsxManager:
@@ -379,11 +375,11 @@ class Dao:
         try:
             # Poistetaan edelliset asetukset ennen uusien tallentamista.
             cursor.execute("DELETE FROM settings;")
-            cursor.execute("INSERT INTO settings VALUES %s", directory)
+            cursor.execute("INSERT INTO settings VALUES (%s)", directory)
             connection.commit()
         except DatabaseError as error:
             print(error.args)
-            print("Mitään ei tallennettu")
+            print("Nothing was saved")
             connection.rollback()
 
         connection.close()
