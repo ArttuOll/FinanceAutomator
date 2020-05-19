@@ -41,27 +41,49 @@ def choose_dir():
     return os.path.join(path, transactions_file_name)
 
 
-def check_settings():
+def set_transactions_dir():
     global transactions_dir
 
+    transactions_dir = choose_dir()
+    database.write_settings(transactions_dir)
+
+
+def check_settings():
+    global transactions_dir
+    global categories_tags_dict
+    global jsonmanager
+
     settings = database.read_settings()
+    categories_tags_dict = jsonmanager.read_tags()
+
     if settings is None:
         print("It seems we'll have to do some settings before we begin\n")
-        choose_settings()
+        set_transactions_dir()
+
+    elif categories_tags_dict == {}:
+        print("No categories have been defined.")
+        set_categories_and_tags()
+
     else:
-        print("Would you like to edit your settings? Type Y for yes or N for no.")
+        print("Would you like to edit your settings?")
         edit_settings = input()
 
         if edit_settings == "Y":
-            choose_settings()
-            return
+            set_transactions_dir()
         else:
             transactions_dir = settings[0]
+
+        print("Would you like edit your categories and tags? ")
+        edit_cats_tags = input()
+
+        if edit_cats_tags == "Y":
+            set_categories_and_tags()
 
 
 def set_categories_and_tags():
     global jsonmanager
     global eventcalc
+    global categories_tags_dict
 
     categories = []
 
@@ -90,20 +112,8 @@ def set_categories_and_tags():
 
         tags.append(tags_of_category)
 
-    return lists_to_dict(categories, tags)
-
-
-def choose_settings():
-    global transactions_dir
-
-    transactions_dir = choose_dir()
-    database.write_settings(transactions_dir)
-
-    print("Would you like to reset your categories and tags? Y for yes or N for no")
-    reset = input()
-
-    if reset == "Y":
-        set_categories_and_tags()
+    categories_tags_dict = lists_to_dict(categories, tags)
+    jsonmanager.write_tags(categories_tags_dict)
 
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
@@ -111,16 +121,15 @@ jsonmanager = JsonManager()
 eventext = EventExtractor()
 
 transactions_dir = ""
+
 categories_tags_dict = {}
 
 check_settings()
 
-eventcalc = EventCalculator(eventext.extract_events_from_file(transactions_dir),
+eventcalc = EventCalculator(eventext.events_from_file(transactions_dir),
                             categories_tags_dict)
-jsonmanager.write_tags(categories_tags_dict)
 
 print("Calculating incomes and expenses of the month...")
-# TODO: omaa syötettyä kategoriaa ei ilmesty tähän sanakirjaan
 values_by_category = eventcalc.calculate_values_by_category()
 
 print("Writing results to talousseuranta_autom.xlsx...")

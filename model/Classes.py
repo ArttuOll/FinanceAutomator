@@ -113,7 +113,7 @@ class Event:
         date = date
         name = name
         amount = amount
-        event_type = "PALKKA"
+        event_type = "SEPA PIKA"
         payment_number = payment_number
         return cls(date=date, name=name, amount=amount, event_type=event_type, payment_number=payment_number)
 
@@ -193,9 +193,9 @@ class EventCalculator:
         other_expenses = values_by_category["Total expenses"]
         for category in values_by_category:
             if values_by_category[category] < 0 and category != "Total expenses":
-                other_expenses += values_by_category[category]
+                other_expenses -= values_by_category[category]
 
-        values_by_category["Other expenses"] = other_income
+        values_by_category["Other expenses"] = other_expenses
 
         # Yhdistetään molemmat sanakirjat yhdeksi, ottaen myös taseen mukaan
         values = {**values_by_category, "Balance": self.__get_balance()}
@@ -205,7 +205,7 @@ class EventCalculator:
 
 class EventExtractor:
 
-    def extract_events_from_file(self, path):
+    def events_from_file(self, path):
         try:
             events = []
             with open(path, "r", encoding="iso-8859-1") as transactions_file:
