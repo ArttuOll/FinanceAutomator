@@ -146,62 +146,61 @@ class EventCalculator:
     def __get_balance(self):
         return self.__count_sum_of_events(self.incomes) + self.__count_sum_of_events(self.expenses)
 
-    def __count_expenses_by_category(self):
+    def __count_events_by_category(self):
         categories_values = {}
-        for expense in self.expenses:
-            name = expense.name.lower()
-            for category in self.categories_tags_dict:
-                total = 0
-                for tag in category:
+        for category in self.categories_tags_dict:
+            total = 0
+            for expense in self.events:
+                name = expense.name.lower()
+                for tag in self.categories_tags_dict[category]:
                     if tag in name:
                         total += Decimal(expense.amount)
-                categories_values[category] = total
+            categories_values[category] = total
 
         return categories_values
 
     def __count_income_by_category(self):
         categories_values = {}
-        for income_event in self.incomes:
-            name = income_event.name.lower()
-            for category in self.categories_tags_dict:
-                total = 0
-                for tag in category:
+        for category in self.categories_tags_dict:
+            total = 0
+            for income in self.incomes:
+                name = income.name.lower()
+                for tag in self.categories_tags_dict[category]:
                     if tag in name:
-                        total += Decimal(income_event.amount)
-                categories_values[category] = total
+                        total += Decimal(income.amount)
+            categories_values[category] = total
 
         return categories_values
 
     def calculate_values_by_category(self):
-        income_by_category = self.__count_income_by_category()
+        values_by_category = self.__count_events_by_category()
 
-        # Lasketaan kokonaistulot ja muut tulot
-        total_income = self.__count_sum_of_events(self.incomes)
-        income_by_category["Total income"] = total_income
+        # Lasketaan kokonaistulot
+        values_by_category["Total income"] = self.__count_sum_of_events(self.incomes)
 
-        other_income = total_income
-        for category in income_by_category:
-            other_income -= income_by_category[category]
+        # Lasketaan muut tulot
+        other_income = values_by_category["Total income"]
+        for category in values_by_category:
+            if values_by_category[category] >= 0 and category != "Total income":
+                other_income -= values_by_category[category]
 
-        income_by_category["Other income"] = other_income
+        values_by_category["Other income"] = other_income
 
-        # Lasketaan kokonaismenot ja muut menot
-        expenses_by_category = self.__count_expenses_by_category()
+        # Lasketaan kokonaiskulut
+        values_by_category["Total expenses"] = self.__count_sum_of_events(self.expenses)
 
-        total_expenses = self.__count_sum_of_events(self.expenses)
-        expenses_by_category["Total expenses"] = total_expenses
+        # Lasketaan muut kulut
+        other_expenses = values_by_category["Total expenses"]
+        for category in values_by_category:
+            if values_by_category[category] < 0 and category != "Total expenses":
+                other_expenses += values_by_category[category]
 
-        other_expenses = total_expenses
-        for category in expenses_by_category:
-            other_expenses -= expenses_by_category[category]
-
-        income_by_category["Other expenses"] = other_income
+        values_by_category["Other expenses"] = other_income
 
         # Yhdistetään molemmat sanakirjat yhdeksi, ottaen myös taseen mukaan
-        values = {**income_by_category, **expenses_by_category, "Balance": self.__get_balance()}
+        values = {**values_by_category, "Balance": self.__get_balance()}
 
-        # Järjestetään sanakirja arvojen mukaan
-        return {k: v for k, v in sorted(values.items(), key=lambda item: item[1])}
+        return values
 
 
 class EventExtractor:
