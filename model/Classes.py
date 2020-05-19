@@ -143,7 +143,7 @@ class EventCalculator:
             total += event.amount
         return total
 
-    def __get_balance(self):
+    def __count_balance(self):
         return self.__count_sum_of_events(self.incomes) + self.__count_sum_of_events(self.expenses)
 
     def __count_events_by_category(self):
@@ -172,35 +172,50 @@ class EventCalculator:
 
         return categories_values
 
-    def calculate_values_by_category(self):
-        values_by_category = self.__count_events_by_category()
+    def __count_atm_events(self):
+        total = 0
+        for expense in self.expenses:
+            if expense.event_type == "AUTOM. NOSTO":
+                total += expense.amount
+        return total
 
-        # Lasketaan kokonaistulot
-        values_by_category["Total income"] = self.__count_sum_of_events(self.incomes)
-
-        # Lasketaan muut tulot
+    @staticmethod
+    def __count_other_income(values_by_category):
         other_income = values_by_category["Total income"]
         for category in values_by_category:
-            if values_by_category[category] >= 0 and category != "Total income":
+            if values_by_category[category] >= 0 and category != "Total income" and category != "Atm":
                 other_income -= values_by_category[category]
+        return other_income
 
-        values_by_category["Other income"] = other_income
-
-        # Lasketaan kokonaiskulut
-        values_by_category["Total expenses"] = self.__count_sum_of_events(self.expenses)
-
-        # Lasketaan muut kulut
+    @staticmethod
+    def __count_other_expenses(values_by_category):
         other_expenses = values_by_category["Total expenses"]
         for category in values_by_category:
             if values_by_category[category] < 0 and category != "Total expenses":
                 other_expenses -= values_by_category[category]
+        return other_expenses
 
-        values_by_category["Other expenses"] = other_expenses
+    def calculate_values_by_category(self):
+        values_by_category = self.__count_events_by_category()
 
-        # Yhdistetään molemmat sanakirjat yhdeksi, ottaen myös taseen mukaan
-        values = {**values_by_category, "Balance": self.__get_balance()}
+        # Lasketaan käteisnostot
+        values_by_category["Käteisnostot"] = self.__count_atm_events()
 
-        return values
+        # Lasketaan kokonaistulot
+        values_by_category["Tulot yht."] = self.__count_sum_of_events(self.incomes)
+
+        # Lasketaan muut tulot
+        values_by_category["Muut tulot"] = self.__count_other_income(values_by_category)
+
+        # Lasketaan kokonaiskulut
+        values_by_category["Menot yht."] = self.__count_sum_of_events(self.expenses)
+
+        # Lasketaan muut kulut
+        values_by_category["Muut menot"] = self.__count_other_expenses(values_by_category)
+
+        values_by_category["Tase"] = self.__count_balance()
+
+        return values_by_category
 
 
 class EventExtractor:
