@@ -8,10 +8,11 @@ from model.Classes import EventCalculator, Event, clean_fragments
 expense1 = Event.card_payment("20.4.2020", "LIDL TRE FINLAYSON", Decimal("-5.25"), "'TAMPERE FIN")
 expense2 = Event.card_payment("21.5.2020", "K MARKET", Decimal("-30.00"), "'KUOPIO FIN")
 expense3 = Event.card_payment("21.5.2020", "salainen maksu", Decimal("-10.00"), "'KUOPIO FIN")
+expense4 = Event.atm_withdrawal("21.5.2020", "", Decimal("-60"), "'KUOPIO FIN")
 income1 = Event.salary("19.3.2020", "OSUMA", Decimal("100.25"), "10 PALKKA")
 income2 = Event.salary("20.3.2020", "OSUMA", Decimal("15.50"), "10 PALKKA")
 income3 = Event.salary("20.3.2020", "mystinen", Decimal("10.0"), "velat")
-events = [expense1, expense2, expense3, income1, income2, income3]
+events = [expense1, expense2, expense3, expense4, income1, income2, income3]
 categories_tags_dict = {
     "groceries": ["market", "lidl"],
     "salary": ["osuma"]
@@ -26,7 +27,7 @@ def handler():
 
 def test_sort_expenses(handler):
     expenses = handler.expenses
-    expected = [expense1, expense2, expense3]
+    expected = [expense1, expense2, expense3, expense4]
     assert expenses == expected
 
 
@@ -39,11 +40,12 @@ def test_sort_incomes(handler):
 def test_calculate_values_by_category(handler):
     actual = handler.calculate_values_by_category()
     expected = {
-        "Balance": Decimal("80.50"),
+        "Balance": Decimal("20.50"),
+        "Atm": Decimal("-60.0"),
         "Other expenses": Decimal("-10.00"),
         "Other income": Decimal("10.00"),
         "Total income": Decimal("125.75"),
-        "Total expenses": Decimal("-45.25"),
+        "Total expenses": Decimal("-105.25"),
         "groceries": Decimal("-35.25"),
         "salary": Decimal("115.75")
     }

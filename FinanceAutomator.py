@@ -19,20 +19,21 @@ def lists_to_dict(categories, tags):
 
 def choose_dir():
     while True:
-        print("Path to directory containing your bank accounts events:")
+        print("Polku kansioon, joka sisältää tiliotteen.")
         path = input()
         transactions_file_name = ""
 
         if not os.path.exists(path):
-            print("Path does not exist.")
+            print("Polkua ei olemassa.")
             continue
         elif os.path.isfile(path):
-            print("The path you gave was to a file, but a path to a directory is needed!")
+            print("Antamasi polku johti tiedostoon, mutta tarvitaan hakemistoon johtava polku.")
             continue
         else:
             file = [f for f in listdir(path) if isfile(join(path, f))]
             if len(file) != 1:
-                print("Your transactions directory contains multiple files. It should only contain one!")
+                print("Tiliotteen sisältävässä kansiossa oli useampi kuin yksi tiedosto."
+                      " Vain yhtä odotettiin.")
                 continue
             else:
                 transactions_file_name = file[0]
@@ -57,26 +58,26 @@ def check_settings():
     categories_tags_dict = jsonmanager.read_tags()
 
     if settings is None:
-        print("It seems we'll have to do some settings before we begin\n")
+        print("Asetukset on asetettava ennen laskemisen aloittamista.")
         set_transactions_dir()
 
     elif categories_tags_dict == {}:
-        print("No categories have been defined.")
+        print("Laskemisen kategorioita ei ole määritelty.")
         set_categories_and_tags()
 
     else:
-        print("Would you like to edit your settings?")
+        print("Haluatko muokata aiempia asetuksiasi?")
         edit_settings = input()
 
-        if edit_settings == "Y":
+        if edit_settings == "K":
             set_transactions_dir()
         else:
             transactions_dir = settings[0]
 
-        print("Would you like edit your categories and tags? ")
+        print("Haluatko uudelleen asettaa aiemmat kategorioit ja niiden tunnisteet?")
         edit_cats_tags = input()
 
-        if edit_cats_tags == "Y":
+        if edit_cats_tags == "K":
             set_categories_and_tags()
 
 
@@ -91,7 +92,7 @@ def set_categories_and_tags():
     tags = []
 
     while True:
-        print("Input category name. Type OK to finish setting up categories and tags.")
+        print("Anna kategorian nimi. Saatuasi kategorioiden ja tunnisteiden syöttämisen valmiiksi, syötä OK")
         category_name = input()
 
         if category_name == "OK":
@@ -101,8 +102,8 @@ def set_categories_and_tags():
 
         tags_of_category = []
         while True:
-            print("""Input tags, parts of the receiver/sender strings of the transaction that can be used to 
-            identify, which category the transaction belongs to. To finish inputting tags, type OK.""")
+            print("""Syötä tunnisteita, joita esiintyy niiden tilitapahtumien nimissä, jotka kuuluvat antamaasi 
+            kategoriaan. Ollessasi valmis syöta OK""")
             tag = input()
 
             if tag == "OK":
@@ -129,13 +130,10 @@ check_settings()
 eventcalc = EventCalculator(eventext.events_from_file(transactions_dir),
                             categories_tags_dict)
 
-print("Calculating incomes and expenses of the month...")
+print("Lasketaan kuukauden tuloja ja menoja...")
 values_by_category = eventcalc.calculate_values_by_category()
 
-print("Writing results to talousseuranta_autom.xlsx...")
+print("Kirjoitetaan tulokset tiedostoon talousseuranta_autom.xlsx...")
 
-try:
-    xlsxmanager = XlsxManager()
-    xlsxmanager.write_month(values_by_category)
-except FileNotFoundError as e:
-    print(e.strerror, "\n\nFatal error")
+xlsxmanager = XlsxManager()
+xlsxmanager.write_month(values_by_category)
