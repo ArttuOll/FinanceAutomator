@@ -3,10 +3,11 @@ import os
 from os import listdir
 from os.path import isfile, join
 
-from model.Classes import XlsxManager, Dao, JsonManager, EventCalculator, EventExtractor
+from model.Classes import XlsxManager, Dao, TagManager, EventCalculator, EventExtractor
 
 
 def lists_to_dict(categories, tags):
+    """Yhdistää kaksi listaa sanakirjaksi."""
     dictionary = {}
 
     categories_tags = zip(categories, tags)
@@ -18,6 +19,9 @@ def lists_to_dict(categories, tags):
 
 
 def choose_dir():
+    """Opastaa käyttäjää asettamaan ohjelman asetuksiin kansion, jossa tämän tiliotteet sijaitsevat."""
+    global transactions_dir
+
     while True:
         print("Polku kansioon, joka sisältää tiliotteen.")
         path = input()
@@ -39,17 +43,12 @@ def choose_dir():
                 transactions_file_name = file[0]
                 break
 
-    return os.path.join(path, transactions_file_name)
-
-
-def set_transactions_dir():
-    global transactions_dir
-
-    transactions_dir = choose_dir()
+    transactions_dir = os.path.join(path, transactions_file_name)
     database.write_settings(transactions_dir)
 
 
 def check_settings():
+    """Ohjaa käyttää asettamaan ohjelman asetukset ja tallentaa ne."""
     global transactions_dir
     global categories_tags_dict
     global jsonmanager
@@ -59,7 +58,7 @@ def check_settings():
 
     if settings is None:
         print("Asetukset on asetettava ennen laskemisen aloittamista.")
-        set_transactions_dir()
+        choose_dir()
 
     elif categories_tags_dict == {}:
         print("Laskemisen kategorioita ei ole määritelty.")
@@ -70,11 +69,11 @@ def check_settings():
         edit_settings = input()
 
         if edit_settings == "K":
-            set_transactions_dir()
+            choose_dir()
         else:
             transactions_dir = settings[0]
 
-        print("Haluatko uudelleen asettaa aiemmat kategorioit ja niiden tunnisteet?")
+        print("Haluatko uudelleen asettaa kategorioita ja niiden tunnisteet?")
         edit_cats_tags = input()
 
         if edit_cats_tags == "K":
@@ -82,6 +81,8 @@ def check_settings():
 
 
 def set_categories_and_tags():
+    """Ohjaa käyttäjää asettamaan tilitapahtumien tarkastelussa käytettävät kategoriat ja
+    niiden tunnistamiseen käytettävät tunnisteet."""
     global jsonmanager
     global eventcalc
     global categories_tags_dict
@@ -118,22 +119,23 @@ def set_categories_and_tags():
 
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
-jsonmanager = JsonManager()
+jsonmanager = TagManager()
 eventext = EventExtractor()
+xlsxmanager = XlsxManager()
 
 transactions_dir = ""
-
 categories_tags_dict = {}
 
 check_settings()
 
+# Alustetaan EventCalculator käyttäjän asetusten pohjalta.
 eventcalc = EventCalculator(eventext.events_from_file(transactions_dir),
                             categories_tags_dict)
 
+# Lasketaan käyttäjän antamia kategorioita vastaavat arvot.
 print("Lasketaan kuukauden tuloja ja menoja...")
-values_by_category = eventcalc.calculate_values_by_category()
+values_by_category = eventcalc.calculate_values()
 
+# Kirjoitetaan tulokset .xlsx-tiedostoon.
 print("Kirjoitetaan tulokset tiedostoon talousseuranta_autom.xlsx...")
-
-xlsxmanager = XlsxManager()
 xlsxmanager.write_month(values_by_category)

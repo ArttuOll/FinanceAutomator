@@ -14,8 +14,8 @@ income2 = Event.salary("20.3.2020", "OSUMA", Decimal("15.50"), "10 PALKKA")
 income3 = Event.salary("20.3.2020", "mystinen", Decimal("10.0"), "velat")
 events = [expense1, expense2, expense3, expense4, income1, income2, income3]
 categories_tags_dict = {
-    "groceries": ["market", "lidl"],
-    "salary": ["osuma"]
+    "ruoka": ["market", "lidl"],
+    "palkka": ["osuma"]
 }
 
 
@@ -38,16 +38,16 @@ def test_sort_incomes(handler):
 
 
 def test_calculate_values_by_category(handler):
-    actual = handler.calculate_values_by_category()
+    actual = handler.calculate_values()
     expected = {
-        "Balance": Decimal("20.50"),
-        "Atm": Decimal("-60.0"),
-        "Other expenses": Decimal("-10.00"),
-        "Other income": Decimal("10.00"),
-        "Total income": Decimal("125.75"),
-        "Total expenses": Decimal("-105.25"),
-        "groceries": Decimal("-35.25"),
-        "salary": Decimal("115.75")
+        "Tase": Decimal("20.50"),
+        "Käteisnostot": Decimal("-60.0"),
+        "Muut menot": Decimal("-10.00"),
+        "Muut tulot": Decimal("10.00"),
+        "Tulot yht.": Decimal("125.75"),
+        "Menot yht.": Decimal("-105.25"),
+        "ruoka": Decimal("-35.25"),
+        "palkka": Decimal("115.75")
     }
     assert actual == expected
 
