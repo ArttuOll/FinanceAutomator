@@ -24,7 +24,8 @@ def clean_fragments(fragments_unclean):
     return fragments
 
 
-class JsonManager:
+class TagManager:
+    """Huolehtii tunnisteiden lukemisesta ja kirjoittamisesta tunnistetiedostoon."""
 
     def __init__(self):
         self.resources_dir = "resources"
@@ -34,6 +35,8 @@ class JsonManager:
         self.tag_file_path = os.path.join(self.self_dir, self.relative_path)
 
     def read_tags(self):
+        """Lukee kategoriat ja niitä vastaavat tunnisteet tunnistetiedostosta ja palauttaa ne
+        sanakirjana."""
         with open(self.tag_file_path, "r") as tags_file:
             data = tags_file.read()
             categories_tags_object = json.loads(data)
@@ -41,6 +44,7 @@ class JsonManager:
         return categories_tags_object
 
     def write_tags(self, dictionary):
+        """Kirjoittaa kategoriat ja niitä vastaavat tunnisteet tunnistetiedostoon JSON-muodossa."""
         with open(self.tag_file_name, "w", encoding="UTF-8") as categories_tags_file:
             json.dump(dictionary, categories_tags_file, ensure_ascii=False, indent=4)
 
@@ -48,10 +52,12 @@ class JsonManager:
 
 
 class Event:
+    """Kuvaa yhtä tilitapahtumaa. Sisältää tilitapahtuman ominaisuudet. Muokattava vastaamaan
+    käyttäjän pankin tarjoaman tilitapahtumatiedoston kenttiä."""
 
     def __init__(self, date: str, name: str, amount: str, event_type=None, location=None, refnumber=None,
                  cardnumber=None,
-                 message=None, salary_label=None, payment_number=None, category=None):
+                 message=None, salary_label=None, payment_number=None):
         self.date = date
         self.name = name
         self.amount = Decimal(amount)
@@ -119,6 +125,7 @@ class Event:
 
 
 class EventCalculator:
+    """Hoitaa kaiken tilitapahtumiin liittyvän laskennan."""
 
     def __init__(self, events, categories_tags_dict):
         self.events = events
@@ -127,6 +134,7 @@ class EventCalculator:
 
     @staticmethod
     def __sort_events(events):
+        """Lajittelee tilitapahtumat positiivisiin ja negatiivisiin."""
         negative_events = []
         positive_events = []
         for event in events:
@@ -138,15 +146,19 @@ class EventCalculator:
 
     @staticmethod
     def __count_sum_of_events(events):
+        """Laskee listassa olevien tilitapahtumien arvojen summan."""
         total = 0
         for event in events:
             total += event.amount
         return total
 
     def __count_balance(self):
+        """Laskee taseen kaikki tilitapahtumat sisältävän luokkamuuttujan events avulla."""
         return self.__count_sum_of_events(self.incomes) + self.__count_sum_of_events(self.expenses)
 
     def __count_events_by_category(self):
+        """Laskee käyttäjän antamien tilitapahtumien kategorioiden arvot käyttäjän antamien tunnisteiden
+         avulla."""
         categories_values = {}
         for category in self.categories_tags_dict:
             total = 0
@@ -159,20 +171,8 @@ class EventCalculator:
 
         return categories_values
 
-    def __count_income_by_category(self):
-        categories_values = {}
-        for category in self.categories_tags_dict:
-            total = 0
-            for income in self.incomes:
-                name = income.name.lower()
-                for tag in self.categories_tags_dict[category]:
-                    if tag in name:
-                        total += Decimal(income.amount)
-            categories_values[category] = total
-
-        return categories_values
-
     def __count_atm_events(self):
+        """Laskee käteisnostotapahtumien summan luokkamuuttujan expenses avulla."""
         total = 0
         for expense in self.expenses:
             if expense.event_type == "AUTOM. NOSTO":
@@ -181,21 +181,26 @@ class EventCalculator:
 
     @staticmethod
     def __count_other_income(values_by_category):
-        other_income = values_by_category["Total income"]
+        """Laskee kategorioihin liittymättömien tulojen summan."""
+        other_income = values_by_category["Tulot yht."]
         for category in values_by_category:
-            if values_by_category[category] >= 0 and category != "Total income" and category != "Atm":
+            if values_by_category[category] >= 0 and category != "Tulot yht." and category != "Käteisnostot":
                 other_income -= values_by_category[category]
         return other_income
 
     @staticmethod
     def __count_other_expenses(values_by_category):
-        other_expenses = values_by_category["Total expenses"]
+        """Laskee kategorioihin liittymättömien menojen summan."""
+        other_expenses = values_by_category["Menot yht."]
         for category in values_by_category:
-            if values_by_category[category] < 0 and category != "Total expenses":
+            if values_by_category[category] < 0 and category != "Menot yht.":
                 other_expenses -= values_by_category[category]
         return other_expenses
 
-    def calculate_values_by_category(self):
+    def calculate_values(self):
+        """Laskee käyttäjän antamien sekä vakiotilitapahtumakategorioiden arvot ja palauttaa ne
+        sanakirjana."""
+
         values_by_category = self.__count_events_by_category()
 
         # Lasketaan käteisnostot
@@ -219,8 +224,11 @@ class EventCalculator:
 
 
 class EventExtractor:
+    """Lukee tilitapahtumat sisältävän tiedoston ja muuntaa sen Event-olioita sisältäväksi listaksi."""
 
     def events_from_file(self, path):
+        """Hoitaa tilitapahtumat sisältävän tiedoston lukemisen ja Event-olioita sisältävän listan
+        palauttamisen."""
         try:
             events = []
             with open(path, "r", encoding="iso-8859-1") as transactions_file:
@@ -238,11 +246,13 @@ class EventExtractor:
             return events
 
         except FileNotFoundError:
-            print("No such file!")
+            print("Tiedostoa ei ole olemassa.")
             return
 
     @staticmethod
     def __create_event(fragments):
+        """Luo ja palauttaa oikean tyyppisen Event-olion perustuen tilitapahtumatiedostossa määriteltyyn
+        tapahtumatyyppiin."""
         if fragments[2] == "KORTTIOSTO":
             date = fragments[0]
             name = fragments[1]
@@ -293,13 +303,16 @@ class EventExtractor:
 
 
 class XlsxManager:
+    """Hoitaa xlsx-tiedostoihin liittyvät toiminnot."""
 
     def __init__(self):
         os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
+        # Ohjelmalle annetaan aina edellisen kuukauden tilitapahtumat.
         self.past_month = datetime.datetime.today().month - 1
 
     @staticmethod
     def __write_months_in_sheet(sheet):
+        """Kirjoittaa kuukausien nimet xlsx-tiedostoon."""
         months = ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu",
                   "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"]
 
@@ -308,6 +321,7 @@ class XlsxManager:
             sheet[month_column + str(5)] = months[i]
 
     def init_workbooks(self):
+        """Luo uuden xlsx-tiedoston ja alustaa uuden laskentataulukon."""
         new_workbook = openpyxl.Workbook()
         sheet = new_workbook.active
         sheet.title = "taloushistoria"
@@ -323,18 +337,20 @@ class XlsxManager:
         new_workbook.save("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
 
     def __write_values_in_sheet(self, sheet, values: list):
+        """Kirjoittaa annetut arvot annettuun laskentataulukkoon oikeaa kuukautta vastaavaan sarakkeeseen."""
         month_column = chr(ord("A") + self.past_month)
 
         for i in range(len(values)):
             sheet[month_column + str(i + 6)] = values[i]
 
     def write_month(self, categories_values: dict):
+        """Kirjoittaa laskentataulukkoon edellistä kuukautta vastaavat arvot."""
         try:
             # Avataan kahden kuukauden takainen tiedosto muokattavaksi
             workbook = openpyxl.load_workbook("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
         except FileNotFoundError:
             # Jos tiedostoa ei ole, eli ohjelmaa suoritetaan ensimmäisen kerran,
-            # luodaan uusi ja kutsutaan metodia uudelleen
+            # luodaan uusi xlsx-tiedosto ja kutsutaan metodia uudelleen.
             self.init_workbooks()
             self.write_month(categories_values)
             return
@@ -356,11 +372,13 @@ class XlsxManager:
 
     @staticmethod
     def __write_categories_in_sheet(sheet, categories):
+        """Kirjoittaa laskentataulukkoon käyttäjän antamat tilitapahtumakategoriat."""
         for i in range(len(categories)):
             sheet["A" + str(i + 6)] = categories[i]
 
 
 class Dao:
+    """Huolehtii tietokantaan kirjoittamisesta ja sieltä lukemisesta."""
 
     def __init__(self, address, username, password, database):
         self.address = address
@@ -369,6 +387,8 @@ class Dao:
         self.database = database
 
     def write_settings(self, directory):
+        """Kirjoittaa annetut asetukset tietokantaan. Tällä hetkellä ainoa asetus on tilitapahtumat
+        sisältävän tiedoston sijainti (muuttuja directory)."""
         connection = pymysql.connect(self.address, self.username, self.password, self.database)
 
         cursor = connection.cursor()
@@ -385,6 +405,7 @@ class Dao:
         connection.close()
 
     def read_settings(self):
+        """Lukee asetukset tietokannasta ja palauttaa ne yhtenä muuttujana."""
         connection = pymysql.connect(self.address, self.username, self.password, self.database)
 
         cursor = connection.cursor()
