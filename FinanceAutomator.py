@@ -1,7 +1,5 @@
 #!/home/bsuuv/Ohjelmistoprojektit/venv/bin python
 import os
-from os import listdir
-from os.path import isfile, join
 
 from model.Classes import XlsxManager, Dao, TagManager, EventCalculator, EventExtractor
 
@@ -25,7 +23,6 @@ def choose_dir():
     while True:
         print("Polku kansioon, joka sisältää tiliotteen.")
         path = input()
-        transactions_file_name = ""
 
         if not os.path.exists(path):
             print("Polkua ei olemassa.")
@@ -34,17 +31,10 @@ def choose_dir():
             print("Antamasi polku johti tiedostoon, mutta tarvitaan hakemistoon johtava polku.")
             continue
         else:
-            file = [f for f in listdir(path) if isfile(join(path, f))]
-            if len(file) != 1:
-                print("Tiliotteen sisältävässä kansiossa oli useampi kuin yksi tiedosto."
-                      " Vain yhtä odotettiin.")
-                continue
-            else:
-                transactions_file_name = file[0]
-                break
+            break
 
-    transactions_dir = os.path.join(path, transactions_file_name)
-    database.write_settings(transactions_dir)
+    transactions_dir = path
+    database.write_settings(path)
 
 
 def check_settings():

@@ -2,6 +2,8 @@ import datetime
 import json
 import os
 from decimal import Decimal
+from os import listdir
+from os.path import isfile, join
 
 import openpyxl
 import pymysql
@@ -229,9 +231,10 @@ class EventExtractor:
     def events_from_file(self, path):
         """Hoitaa tilitapahtumat sisältävän tiedoston lukemisen ja Event-olioita sisältävän listan
         palauttamisen."""
+        file = os.path.join(path, self.__read_only_filename_from_directory(path))
         try:
             events = []
-            with open(path, "r", encoding="iso-8859-1") as transactions_file:
+            with open(file, "r", encoding="iso-8859-1") as transactions_file:
                 all_lines = transactions_file.read().splitlines()
 
                 # Delete header row
@@ -301,11 +304,21 @@ class EventExtractor:
 
             return Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
 
+    @staticmethod
+    def __read_only_filename_from_directory(path):
+        file = [f for f in listdir(path) if isfile(join(path, f))]
+        if len(file) != 1:
+            print("Tiliotteen sisältävässä kansiossa oli useampi kuin yksi tiedosto."
+                  " Vain yhtä odotettiin. Poista muut tiedostot ja aja ohjelma uudelleen.")
+        else:
+            return file[0]
+
 
 class XlsxManager:
     """Hoitaa xlsx-tiedostoihin liittyvät toiminnot."""
 
     def __init__(self):
+        # TODO: poista kovakoodaus ja anna käyttäjälle mahdollisuus muuttaa tiedoston tallennussijaintia.
         os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
         # Ohjelmalle annetaan aina edellisen kuukauden tilitapahtumat.
         self.past_month = datetime.datetime.today().month - 1
