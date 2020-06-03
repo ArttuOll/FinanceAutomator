@@ -3,7 +3,8 @@ Automatisoi henkilökohtaisen talousseurannan ylläpitämällä xlsx-laskentatau
 
 Ohjelman kulku:
 
-1. Käyttäjä antaa ohjelmalle tiedostopolun kansioon, joka sisältää käyttäjän viime kuukauden tilitapahtumat.
+1. Käyttäjä antaa ohjelmalle tiedostopolun hakemistoon, joka sisältää käyttäjän viime kuukauden tilitapahtumat.
+2. Käyttäjä antaa ohjelmalle tiedostopolun hakemistoon, joka sisältää käyttäjän viime kuukauden tiliotteen.
 2. Käyttäjä antaa ohjelmalle kategorian, jolle hän haluaa arvon laskettavan viime kuukauden tilitapahtumista. Esim. "ruokaostokset".
 3. Käyttäjä antaa ohjelmalle tunnisteita, joita ohjelma käyttää tunnistaakseen tilitapahtumat, jotka kuuluvat edellä annettuun kategoriaan. Esim. "market" tai "lidl".
 4. Ohjelma laskee tilitapahtumien summat annettujen kategorioiden ja tunnisteiden perusteella ja kirjoittaa tulokset tiedostoon "talousseuranta_<kuukauden numero>.xlsx kovakoodattuun sijaintiin.
