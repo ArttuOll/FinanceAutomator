@@ -317,9 +317,8 @@ class EventExtractor:
 class XlsxManager:
     """Hoitaa xlsx-tiedostoihin liittyvät toiminnot."""
 
-    def __init__(self):
-        # TODO: poista kovakoodaus ja anna käyttäjälle mahdollisuus muuttaa tiedoston tallennussijaintia.
-        os.chdir("/home/bsuuv/Asiakirjat/talousseuranta")
+    def __init__(self, save_dir):
+        os.chdir(save_dir)
         # Ohjelmalle annetaan aina edellisen kuukauden tilitapahtumat.
         self.past_month = datetime.datetime.today().month - 1
 
@@ -399,7 +398,7 @@ class Dao:
         self.password = password
         self.database = database
 
-    def write_settings(self, directory):
+    def write_settings(self, transactions_dir, save_dir):
         """Kirjoittaa annetut asetukset tietokantaan. Tällä hetkellä ainoa asetus on tilitapahtumat
         sisältävän tiedoston sijainti (muuttuja directory)."""
         connection = pymysql.connect(self.address, self.username, self.password, self.database)
@@ -408,7 +407,7 @@ class Dao:
         try:
             # Poistetaan edelliset asetukset ennen uusien tallentamista.
             cursor.execute("DELETE FROM settings;")
-            cursor.execute("INSERT INTO settings VALUES (%s)", directory)
+            cursor.execute("INSERT INTO settings VALUES (%s, %s)", (transactions_dir, save_dir))
             connection.commit()
         except DatabaseError as error:
             print(error.args)

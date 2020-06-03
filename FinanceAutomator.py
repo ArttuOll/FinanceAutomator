@@ -16,12 +16,10 @@ def lists_to_dict(categories, tags):
     return dictionary
 
 
-def choose_dir():
-    """Opastaa käyttäjää asettamaan ohjelman asetuksiin kansion, jossa tämän tiliotteet sijaitsevat."""
-    global transactions_dir
-
+def get_and_validate_path(path_guidance_text):
+    """Lukee käyttäjän syötteestä tiedostopolun ja tarkastaa, että se on olemassa ja että se johtaa hakemistoon."""
     while True:
-        print("Polku kansioon, joka sisältää tiliotteen.")
+        print(path_guidance_text)
         path = input()
 
         if not os.path.exists(path):
@@ -31,15 +29,26 @@ def choose_dir():
             print("Antamasi polku johti tiedostoon, mutta tarvitaan hakemistoon johtava polku.")
             continue
         else:
-            break
+            return path
 
-    transactions_dir = path
-    database.write_settings(path)
+
+def choose_saving_and_transactions_dir():
+    """Opastaa käyttäjää asettamaan ohjelman asetuksiin hakemiston, johon ohjelman tuottamat laskentataulukot
+    tallennetaan sekä hakemiston, josta laskemiseen käytettävät tiliote löytyy."""
+    global save_dir
+    global transactions_dir
+
+    save_path_guidance_text = "Polku kansioon, johon haluat laskentataulukot tallennettavan."
+    save_dir = get_and_validate_path(save_path_guidance_text)
+
+    transactions_dir_guidance_text = "Polku kansioon, joka sisältää tiliotteen."
+    transactions_dir = get_and_validate_path(transactions_dir_guidance_text)
 
 
 def check_settings():
     """Ohjaa käyttää asettamaan ohjelman asetukset ja tallentaa ne."""
     global transactions_dir
+    global save_dir
     global categories_tags_dict
     global jsonmanager
 
@@ -48,7 +57,8 @@ def check_settings():
 
     if settings is None:
         print("Asetukset on asetettava ennen laskemisen aloittamista.")
-        choose_dir()
+        choose_saving_and_transactions_dir()
+        database.write_settings(transactions_dir, save_dir)
 
     elif categories_tags_dict == {}:
         print("Laskemisen kategorioita ei ole määritelty.")
@@ -59,9 +69,10 @@ def check_settings():
         edit_settings = input()
 
         if edit_settings == "K":
-            choose_dir()
+            choose_saving_and_transactions_dir()
         else:
             transactions_dir = settings[0]
+            save_dir = settings[1]
 
         print("Haluatko uudelleen asettaa kategorioita ja niiden tunnisteet?")
         edit_cats_tags = input()
@@ -111,8 +122,8 @@ def set_categories_and_tags():
 database = Dao("localhost", "root", "mariaonihana", "fa")
 jsonmanager = TagManager()
 eventext = EventExtractor()
-xlsxmanager = XlsxManager()
 
+save_dir = ""
 transactions_dir = ""
 categories_tags_dict = {}
 
@@ -126,6 +137,9 @@ eventcalc = EventCalculator(eventext.events_from_file(transactions_dir),
 print("Lasketaan kuukauden tuloja ja menoja...")
 values_by_category = eventcalc.calculate_values()
 
-# Kirjoitetaan tulokset .xlsx-tiedostoon.
+# Alustetaan XlsxManager kirjoittamaan tulokset käyttäjän määrittämään hakemistoon ja kirjoitetaan tulokset
+# .xlsx-tiedostoon.
+xlsxmanager = XlsxManager(save_dir)
+
 print("Kirjoitetaan tulokset tiedostoon talousseuranta_autom.xlsx...")
 xlsxmanager.write_month(values_by_category)
