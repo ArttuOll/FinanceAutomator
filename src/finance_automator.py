@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 import os
 
-from model.models import XlsxManager, Dao, TagManager, EventCalculator, EventExtractor
+from .model.models import XlsxManager, Dao, TagManager, EventCalculator, EventExtractor
 
 
 def check_settings():

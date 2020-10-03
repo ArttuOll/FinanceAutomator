@@ -1,3 +1,4 @@
+"""Sisältää ohjelman käyttämät oliot."""
 import datetime, json, os, openpyxl, pymysql
 from decimal import Decimal
 from os import listdir
@@ -190,7 +191,7 @@ class EventCalculator:
         other_income = values_by_category["Tulot yht."]
         for category in values_by_category:
             value = values_by_category[category]
-            if __is_expense_category(value, category):
+            if self.__is_expense_category(value, category):
                 other_income -= values_by_category[category]
                 
         return other_income
