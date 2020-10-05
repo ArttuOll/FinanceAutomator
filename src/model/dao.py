@@ -1,9 +1,8 @@
-"""Huolehtii tietokantaan kirjoittamisesta ja sieltä lukemisesta."""
 from pymysql import DatabaseError, connect
 
 
 class Dao:
-
+    """Huolehtii tietokantaan kirjoittamisesta ja sieltä lukemisesta."""
     def __init__(self, address, username, password, database):
         self.address = address
         self.username = username
@@ -11,8 +10,8 @@ class Dao:
         self.database = database
 
     def write_settings(self, transactions_dir, save_dir):
-        """Kirjoittaa annetut asetukset tietokantaan. Tällä hetkellä ainoa 
-        asetus on tilitapahtumat sisältävän tiedoston sijainti 
+        """Kirjoittaa annetut asetukset tietokantaan. Tällä hetkellä ainoa
+        asetus on tilitapahtumat sisältävän tiedoston sijainti
         (muuttuja directory)."""
 
         connection = connect(self.address, self.username, self.password,
