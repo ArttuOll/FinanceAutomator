@@ -2,25 +2,30 @@
 #!/usr/bin/env python3
 import os
 
-from .model.models import XlsxManager, Dao, TagManager, EventCalculator, EventExtractor
+from .model.tag_manager import TagManager
+from .model.event_calculator import EventCalculator
+from .model.event_extractor import EventExtractor
+from .model.xlsx_writer import XlsxWriter
+from .model.dao import Dao
 
 
 def check_settings():
     """Ohjaa käyttää asettamaan ohjelman asetukset ja tallentaa ne."""
-    global transactions_dir
-    global save_dir
-    global categories_tags_dict
-    global jsonmanager
+
+    global TRANSACTIONS_DIR
+    global SAVE_DIR
+    global CATEGORIES_TAGS_DICT
+    global TAG_MANAGER
 
     settings = database.read_settings()
-    categories_tags_dict = jsonmanager.read_tags()
+    CATEGORIES_TAGS_DICT = TAG_MANAGER.read_tags()
 
     if settings is None:
         print("Asetukset on asetettava ennen laskemisen aloittamista.")
         choose_saving_and_transactions_dir()
-        database.write_settings(transactions_dir, save_dir)
+        database.write_settings(TRANSACTIONS_DIR, SAVE_DIR)
 
-    elif categories_tags_dict == {}:
+    elif CATEGORIES_TAGS_DICT == {}:
         print("Laskemisen kategorioita ei ole määritelty.")
         set_categories_and_tags()
 
@@ -29,8 +34,9 @@ def check_settings():
 
 
 def get_and_validate_path(path_guidance_text):
-    """Lukee käyttäjän syötteestä tiedostopolun ja tarkastaa, että se on 
+    """Lukee käyttäjän syötteestä tiedostopolun ja tarkastaa, että se on
     olemassa ja että se johtaa hakemistoon."""
+
     while True:
         print(path_guidance_text)
         path = input()
@@ -38,50 +44,64 @@ def get_and_validate_path(path_guidance_text):
         if not os.path.exists(path):
             print("Polkua ei olemassa.")
             continue
-        elif os.path.isfile(path):
+
+        if os.path.isfile(path):
             print(("Antamasi polku johti tiedostoon, mutta tarvitaan "
                     "hakemistoon johtava polku."))
             continue
-        else:
-            return path
+
+        return path
 
 
 def edit_previous_settings_dialog(settings):
-        print("Haluatko muokata aiempia asetuksiasi? (K, jos kyllä)")
-        edit_settings = input()
+    """Kysyy käyttäjältä, haluaako tämä muuttaa ohjelman aiempia asetuksia. Jos
+    kyllä, ohjaa käyttäjän tallennuskansioiden ja tunnisteiden muokkaamis
+    dialogeihin"""
 
-        if edit_settings == "K":
-            edit_directories_dialog(settings)
-            edit_categories_tags_dialog()
+    print("Haluatko muokata aiempia asetuksiasi? (K, jos kyllä)")
+    edit_settings = input()
+
+    if edit_settings == "K":
+        edit_directories_dialog(settings)
+        edit_categories_tags_dialog()
 
 
 def edit_directories_dialog(settings):
+    """Näyttää ohjelman vaatimien hakemistojen muuttamisdialogin ja asettaa ne
+    uudelleen käyttäjän syötteen perusteelle"""
+
+    global TRANSACTIONS_DIR
+    global SAVE_DIR
+
     print(("Haluatko muuttaa laskentataulukoiden tai tilitapahtumien"
         "sijainteja? (K, jos kyllä)?"))
     edit_directories = input()
     if edit_directories == "K":
         choose_saving_and_transactions_dir()
     else:
-        transactions_dir = settings[0]
-        save_dir = settings[1]
+        TRANSACTIONS_DIR = settings[0]
+        SAVE_DIR = settings[1]
 
 
 def choose_saving_and_transactions_dir():
-    """Opastaa käyttäjää asettamaan ohjelman asetuksiin hakemiston, johon 
-    ohjelman tuottamat laskentataulukot tallennetaan sekä hakemiston, josta 
+    """Opastaa käyttäjää asettamaan ohjelman asetuksiin hakemiston, johon
+    ohjelman tuottamat laskentataulukot tallennetaan sekä hakemiston, josta
     laskemiseen käytettävät tiliote löytyy."""
-    global save_dir
-    global transactions_dir
+
+    global SAVE_DIR
+    global TRANSACTIONS_DIR
 
     save_path_guidance_text = ("Polku kansioon, johon haluat laskentataulukot "
                                "tallennettavan.")
-    save_dir = get_and_validate_path(save_path_guidance_text)
+    SAVE_DIR = get_and_validate_path(save_path_guidance_text)
 
     transactions_dir_guidance_text = "Polku kansioon, joka sisältää tiliotteen."
-    transactions_dir = get_and_validate_path(transactions_dir_guidance_text)
+    TRANSACTIONS_DIR = get_and_validate_path(transactions_dir_guidance_text)
 
 
 def edit_categories_tags_dialog():
+    """Opastaa käyttäjää asettamaan tilitapahtumien luokitteluun käytettävät
+    kategoriat ja niiden tunnistamiseen käytettävät tunnisteet. """
     print(("Haluatko muokata kategorioita ja niiden tunnisteita (K, jos "
         "kyllä)?"))
     edit_categories_tags = input()
@@ -91,23 +111,27 @@ def edit_categories_tags_dialog():
 
 
 def set_categories_and_tags():
-    """Ohjaa käyttäjää asettamaan tilitapahtumien tarkastelussa käytettävät 
+    """Kirjoittaa tilitapahtumien tarkastelussa käytettävät
     kategoriat ja niiden tunnistamiseen käytettävät tunnisteet."""
-    global jsonmanager
+
+    global TAG_MANAGER
     global eventcalc
-    global categories_tags_dict
+    global CATEGORIES_TAGS_DICT
 
     categories = read_categories()
 
-    # Lista, joka sisältää listoja, joista jokaisessa on tiettyyn kategoriaan 
+    # Lista, joka sisältää listoja, joista jokaisessa on tiettyyn kategoriaan
     # kuuluvat tunnisteet.
     tags = read_tags_for_categories(categories)
 
-    categories_tags_dict = lists_to_dict(categories, tags)
-    jsonmanager.write_tags(categories_tags_dict)
+    CATEGORIES_TAGS_DICT = lists_to_dict(categories, tags)
+    TAG_MANAGER.write_tags(CATEGORIES_TAGS_DICT)
 
 
 def read_categories():
+    """Lukee tilitapahtumien tarkastelussa käytettävät kategoriat käyttäjän
+    syötteestä."""
+
     categories = []
     while True:
         print(("Anna kategorian nimi. Saatuasi kategorioiden ja tunnisteiden "
@@ -123,15 +147,20 @@ def read_categories():
 
 
 def read_tags_for_categories(categories):
+    """Lukee annettuja kategorioita vastaavat tunnisteet käyttäjän
+    syötteestä"""
+
     tags = []
     for category in categories:
         tags_of_category = read_tags_for_category(category)
         tags.append(tags_of_category)
-    
+
     return tags
 
 
 def read_tags_for_category(category):
+    """Lukee annettua kategoriaa vastaavat tunnisteet käyttäjän syötteestä"""
+
     tags_of_category = []
     while True:
         print(("Syötä tunnisteita, joita esiintyy niiden tilitapahtumien "
@@ -149,6 +178,7 @@ def read_tags_for_category(category):
 
 def lists_to_dict(list1, list2):
     """Yhdistää kaksi listaa sanakirjaksi."""
+
     dictionary = {}
 
     tuples_zip = zip(list1, list2)
@@ -160,26 +190,26 @@ def lists_to_dict(list1, list2):
 
 
 database = Dao("localhost", "root", "mariaonihana", "fa")
-jsonmanager = TagManager()
+TAG_MANAGER = TagManager()
 eventext = EventExtractor()
 
-save_dir = ""
-transactions_dir = ""
-categories_tags_dict = {}
+SAVE_DIR = ""
+TRANSACTIONS_DIR = ""
+CATEGORIES_TAGS_DICT = {}
 
 check_settings()
 
 # Alustetaan EventCalculator käyttäjän asetusten pohjalta.
-eventcalc = EventCalculator(eventext.events_from_file(transactions_dir),
-                            categories_tags_dict)
+eventcalc = EventCalculator(eventext.events_from_file(TRANSACTIONS_DIR),
+                            CATEGORIES_TAGS_DICT)
 
 # Lasketaan käyttäjän antamia kategorioita vastaavat arvot.
 print("Lasketaan kuukauden tuloja ja menoja...")
 values_by_category = eventcalc.calculate_values()
 
-# Alustetaan XlsxManager kirjoittamaan tulokset käyttäjän määrittämään hakemistoon ja kirjoitetaan tulokset
-# .xlsx-tiedostoon.
-xlsxmanager = XlsxManager(save_dir)
+# Alustetaan XlsxManager kirjoittamaan tulokset käyttäjän määrittämään
+# hakemistoon ja kirjoitetaan tulokset .xlsx-tiedostoon.
+xlsxmanager = XlsxWriter(SAVE_DIR)
 
 print("Kirjoitetaan tulokset tiedostoon talousseuranta_autom.xlsx...")
 xlsxmanager.write_month(values_by_category)
