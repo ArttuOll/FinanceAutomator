@@ -1,6 +1,4 @@
-"""Lukee tilitapahtumat sisältävän tiedoston ja muuntaa sen Event-olioita 
-    sisältäväksi listaksi."""
-
+"""Määrittelee luokan EventExtractor ja sen käyttämät apufunktiot."""
 from os import listdir
 from os.path import isfile, join
 
@@ -8,6 +6,8 @@ from ..model.event import Event
 
 
 def clean_fragments(unclean_fragments):
+    """Muuttaa tilitapahtumamerkkijonon osat helpommin käsiteltävään muotoon.
+    Kaikki heittomerkit poistetaan ja desimaalipilkut korvataan pisteillä."""
     fragments = []
     for fragment in unclean_fragments:
         fragment = fragment.strip("\"").strip("\'")
@@ -21,15 +21,18 @@ def clean_fragments(unclean_fragments):
 
 
 class EventExtractor:
+    """Lukee tilitapahtumat sisältävän tiedoston ja muuntaa sen Event-olioita
+    sisältäväksi listaksi."""
 
     def events_from_file(self, path):
-        """Hoitaa tilitapahtumat sisältävän tiedoston lukemisen ja Event-olioita 
+        """Hoitaa tilitapahtumat sisältävän tiedoston lukemisen ja Event-olioita
         sisältävän listan palauttamisen."""
 
         try:
             events_filename = self.__read_events_filename_from_directory(path)
             file = join(path, events_filename)
-            events = __read_events_from_file(file)
+            # TODO: varmistu tämän toiminnasta
+            return self.__read_events_from_file(file)
         except FileNotFoundError:
             print("Tiedostoa ei ole olemassa.")
             return

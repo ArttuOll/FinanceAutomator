@@ -1,8 +1,13 @@
+import sys
 from decimal import Decimal
+from os import path
 
 import pytest
 
-from src.model.models import EventCalculator, Event, clean_fragments
+from ..model.event import Event
+from ..model.event_calculator import EventCalculator
+from ..model.event_extractor import clean_fragments
+
 
 # Pilkut muutettu pisteiksi, kuten pääskriptissäkin ennen Event-olioiden luomista.
 expense1 = Event.card_payment("20.4.2020", "LIDL TRE FINLAYSON", Decimal("-5.25"), "'TAMPERE FIN")
