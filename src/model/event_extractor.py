@@ -20,6 +20,7 @@ def clean_fragments(unclean_fragments):
     return fragments
 
 
+# TODO: muuta käyttämään Factory-suunnittelumallia
 class EventExtractor:
     """Lukee tilitapahtumat sisältävän tiedoston ja muuntaa sen Event-olioita
     sisältäväksi listaksi."""
@@ -35,15 +36,16 @@ class EventExtractor:
             return self.__read_events_from_file(file)
         except FileNotFoundError:
             print("Tiedostoa ei ole olemassa.")
-            return
+            return None
 
     def __read_events_filename_from_directory(self, path):
         file = [f for f in listdir(path) if isfile(join(path, f))]
         if len(file) != 1:
             print("Tiliotteen sisältävässä kansiossa oli useampi kuin yksi tiedosto."
                   " Vain yhtä odotettiin. Poista muut tiedostot ja aja ohjelma uudelleen.")
-        else:
-            return file[0]
+            return None
+
+        return file[0]
 
     def __read_events_from_file(self, file):
         events = []
@@ -59,9 +61,9 @@ class EventExtractor:
                 events.append(self.__create_event(frags))
 
         return events
-    
+
     def __create_event(self, fragments):
-        """Luo ja palauttaa oikean tyyppisen Event-olion perustuen 
+        """Luo ja palauttaa oikean tyyppisen Event-olion perustuen
         tilitapahtumatiedostossa määriteltyyn tapahtumatyyppiin."""
 
         if fragments[2] == "KORTTIOSTO":
@@ -72,7 +74,7 @@ class EventExtractor:
 
             return Event.card_payment(date=date, name=name, amount=amount, location=location)
 
-        elif fragments[2] == "PALKKA":
+        if fragments[2] == "PALKKA":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -80,7 +82,7 @@ class EventExtractor:
 
             return Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
 
-        elif fragments[2] == "AUTOM. NOSTO":
+        if fragments[2] == "AUTOM. NOSTO":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -88,7 +90,7 @@ class EventExtractor:
 
             return Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
 
-        elif fragments[2] == "TILISIIRTO":
+        if fragments[2] == "TILISIIRTO":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -96,7 +98,7 @@ class EventExtractor:
 
             return Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
 
-        elif fragments[2] == "VERKKOPANKKI":
+        if fragments[2] == "VERKKOPANKKI":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -104,12 +106,11 @@ class EventExtractor:
 
             return Event.online_bank(date=date, name=name, amount=amount, message=message)
 
-        elif fragments[2] == "SEPA PIKA":
+        if fragments[2] == "SEPA PIKA":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
             payment_number = fragments[3]
 
-            return Event.mobilepay(date=date, name=name, amount=amount, payment_number=payment_number)
-
-
+            return Event.mobilepay(date=date, name=name, amount=amount,
+                                   payment_number=payment_number)
