@@ -2,11 +2,11 @@
 #!/usr/bin/env python3
 import os
 
-from .model.tag_manager import TagManager
+from .model.dao import Dao
 from .model.event_calculator import EventCalculator
 from .model.event_extractor import EventExtractor
+from .model.tag_manager import TagManager
 from .model.xlsx_writer import XlsxWriter
-from .model.dao import Dao
 
 
 def check_settings():
@@ -20,6 +20,7 @@ def check_settings():
     settings = database.read_settings()
     CATEGORIES_TAGS_DICT = TAG_MANAGER.read_tags()
 
+    print(f"Asetus olio on seuraavanlainen {settings}")
     if settings is None:
         print("Asetukset on asetettava ennen laskemisen aloittamista.")
         choose_saving_and_transactions_dir()
@@ -30,6 +31,8 @@ def check_settings():
         set_categories_and_tags()
 
     else:
+        TRANSACTIONS_DIR = settings[0]
+        SAVE_DIR = settings[1]
         edit_previous_settings_dialog(settings)
 
 
@@ -200,8 +203,8 @@ CATEGORIES_TAGS_DICT = {}
 check_settings()
 
 # Alustetaan EventCalculator käyttäjän asetusten pohjalta.
-eventcalc = EventCalculator(eventext.events_from_file(TRANSACTIONS_DIR),
-                            CATEGORIES_TAGS_DICT)
+events = eventext.events_from_file(TRANSACTIONS_DIR)
+eventcalc = EventCalculator(events, CATEGORIES_TAGS_DICT)
 
 # Lasketaan käyttäjän antamia kategorioita vastaavat arvot.
 print("Lasketaan kuukauden tuloja ja menoja...")
