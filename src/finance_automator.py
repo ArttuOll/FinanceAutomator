@@ -45,14 +45,7 @@ def get_categories_tags():
     if edited_categories_tags is not None:
         categories_tags_dict = edited_categories_tags
 
-    edited_save_dir, edited_transactions_dir = edit_directories_dialog()
-    if edited_save_dir is not None and edited_transactions_dir is not None:
-        save_dir = edited_save_dir
-        transactions_dir = edited_transactions_dir
-
-    print(f"save_dir={save_dir}")
-    print(f"transactions_dir={transactions_dir}")
-    return save_dir, transactions_dir
+    return categories_tags_dict
 
 
 def get_and_validate_path(path_guidance_text):
