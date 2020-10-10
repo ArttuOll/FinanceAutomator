@@ -9,7 +9,7 @@ class Dao:
         self.password = password
         self.database = database
 
-    def write_settings(self, transactions_dir, save_dir):
+    def write_settings(self, save_dir, transactions_dir):
         """Kirjoittaa annetut asetukset tietokantaan. Tällä hetkellä ainoa
         asetus on tilitapahtumat sisältävän tiedoston sijainti
         (muuttuja directory)."""
@@ -41,4 +41,6 @@ class Dao:
         settings = cursor.fetchone()
         connection.close()
 
-        return settings
+        save_dir = settings[1]
+        transactions_dir = settings[0]
+        return save_dir, transactions_dir
