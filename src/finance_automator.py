@@ -14,7 +14,6 @@ def get_settings():
 
     dao = Dao("localhost", "root", "mariaonihana", "fa")
     save_dir, transactions_dir = dao.read_settings()
-
     if save_dir is None and transactions_dir is None:
         print("Asetukset on asetettava ennen laskemisen aloittamista.")
         save_dir, transactions_dir = choose_saving_and_transactions_dir()
@@ -35,6 +34,28 @@ def get_categories_tags():
     asettamaan ne. Jos tunnistetiedosto ei ollut tyhjä, käyttäjältä kysytään,
     haluaako hän muuttaa niitä."""
 
+    tag_manager = TagManager()
+    categories_tags_dict = tag_manager.read_tags()
+
+    if categories_tags_dict == {}:
+        print("Laskemisen kategorioita ei ole määritelty.")
+        return set_categories_and_tags(tag_manager)
+
+    edited_categories_tags = edit_categories_tags_dialog(tag_manager)
+    if edited_categories_tags is not None:
+        categories_tags_dict = edited_categories_tags
+
+    edited_save_dir, edited_transactions_dir = edit_directories_dialog()
+    if edited_save_dir is not None and edited_transactions_dir is not None:
+        save_dir = edited_save_dir
+        transactions_dir = edited_transactions_dir
+
+    print(f"save_dir={save_dir}")
+    print(f"transactions_dir={transactions_dir}")
+    return save_dir, transactions_dir
+
+
+def get_categories_tags():
     tag_manager = TagManager()
     categories_tags_dict = tag_manager.read_tags()
 
