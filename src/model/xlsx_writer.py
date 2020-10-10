@@ -1,8 +1,36 @@
+"""Määrittelee luokan XlsxWriter ja sen käyttämät apufunktiot"""
 from datetime import datetime
 from os import chdir, remove
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
+
+
+def _write_months_in_sheet(sheet):
+    """Kirjoittaa kuukausien nimet xlsx-tiedostoon."""
+    months = ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu",
+            "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"]
+
+    for i, month in enumerate(months):
+        month_column = chr(ord("B") + i)
+        sheet[month_column + str(5)] = month
+
+
+def _write_categories_in_sheet(sheet, categories):
+    """Kirjoittaa laskentataulukkoon käyttäjän antamat
+    tilitapahtumakategoriat."""
+
+    for i, category in enumerate(categories):
+        sheet["A" + str(i + 6)] = category
+
+
+def _write_values_in_sheet(sheet, values: list, past_month):
+    """Kirjoittaa annetut arvot annettuun laskentataulukkoon annettua kuukauden
+    numeroa vastaavaan sarakkeeseen."""
+    month_column = chr(ord("A") + past_month)
+
+    for i, value in enumerate(values):
+        sheet[month_column + str(i + 6)] = value
 
 
 class XlsxWriter:
@@ -12,15 +40,6 @@ class XlsxWriter:
         chdir(save_dir)
         # Ohjelmalle annetaan aina edellisen kuukauden tilitapahtumat.
         self.past_month = datetime.today().month - 1
-
-    def __write_months_in_sheet(self, sheet):
-        """Kirjoittaa kuukausien nimet xlsx-tiedostoon."""
-        months = ["Tammikuu", "Helmikuu", "Maaliskuu", "Huhtikuu", "Toukokuu", "Kesäkuu",
-                  "Heinäkuu", "Elokuu", "Syyskuu", "Lokakuu", "Marraskuu", "Joulukuu"]
-
-        for i in range(len(months)):
-            month_column = chr(ord("B") + i)
-            sheet[month_column + str(5)] = months[i]
 
     def init_workbooks(self):
         """Luo uuden xlsx-tiedoston ja alustaa uuden laskentataulukon."""
@@ -32,19 +51,11 @@ class XlsxWriter:
         title_font = Font(size=16, bold=True)
         sheet["B1"].font = title_font
 
-        self.__write_months_in_sheet(sheet)
+        _write_months_in_sheet(sheet)
 
-        # Ensimmäisellä ajokerralla luodaan toissakuukauden tiedosto, jotta 
+        # Ensimmäisellä ajokerralla luodaan toissakuukauden tiedosto, jotta
         # write_month() voi toimia normaalisti
         new_workbook.save("talousseuranta_autom" + str(self.past_month - 1) + ".xlsx")
-
-    def __write_values_in_sheet(self, sheet, values: list):
-        """Kirjoittaa annetut arvot annettuun laskentataulukkoon oikeaa 
-        kuukautta vastaavaan sarakkeeseen."""
-        month_column = chr(ord("A") + self.past_month)
-
-        for i in range(len(values)):
-            sheet[month_column + str(i + 6)] = values[i]
 
     def write_month(self, categories_values: dict):
         """Kirjoittaa laskentataulukkoon edellistä kuukautta vastaavat arvot."""
@@ -61,24 +72,15 @@ class XlsxWriter:
 
         sheet = workbook["taloushistoria"]
 
-        self.__write_categories_in_sheet(sheet, list(categories_values.keys()))
-        self.__write_values_in_sheet(sheet, list(categories_values.values()))
+        _write_categories_in_sheet(sheet, list(categories_values.keys()))
+        _write_values_in_sheet(sheet, list(categories_values.values()), self.past_month)
 
         # Tallennetaan tiedosto uudella nimellä, edellinen jää varmuuskopioksi
         workbook.save("talousseuranta_autom" + str(self.past_month) + ".xlsx")
 
-        # Poistetaan vanha varmuuskopio. Ensimmäisella ajokerralla kolmen 
+        # Poistetaan vanha varmuuskopio. Ensimmäisella ajokerralla kolmen
         # kuukauden takaista tiedostoa ei löydy
         try:
             remove("talousseuranta_autom" + str(self.past_month - 2) + ".xlsx")
         except FileNotFoundError:
             pass
-
-    def __write_categories_in_sheet(self, sheet, categories):
-        """Kirjoittaa laskentataulukkoon käyttäjän antamat 
-        tilitapahtumakategoriat."""
-
-        for i in range(len(categories)):
-            sheet["A" + str(i + 6)] = categories[i]
-
-
