@@ -55,21 +55,6 @@ def get_categories_tags():
     return save_dir, transactions_dir
 
 
-def get_categories_tags():
-    tag_manager = TagManager()
-    categories_tags_dict = tag_manager.read_tags()
-
-    if categories_tags_dict == {}:
-        print("Laskemisen kategorioita ei ole määritelty.")
-        return set_categories_and_tags(tag_manager)
-
-    edited_categories_tags = edit_categories_tags_dialog(tag_manager)
-    if edited_categories_tags is not None:
-        categories_tags_dict = edited_categories_tags
-
-    return categories_tags_dict
-
-
 def get_and_validate_path(path_guidance_text):
     """Lukee käyttäjän syötteestä tiedostopolun ja tarkastaa, että se on
     olemassa ja että se johtaa hakemistoon."""
