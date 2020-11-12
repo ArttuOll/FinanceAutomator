@@ -1,5 +1,6 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
 #!/usr/bin/env python3
+from pathlib import Path
 import os
 
 
@@ -16,10 +17,10 @@ def guided_configuration():
     configs_dir = read_configs_dir()
 
     settings = {
+            "configs_dir": configs_dir,
             "transactions_dir": transactions_dir,
             "save_dir": save_dir,
-            "categories_tags": categories_tags,
-            "configs_dir": configs_dir
+            "categories_tags": categories_tags
     }
 
     return settings
@@ -148,7 +149,7 @@ def read_configs_dir():
     print("""Syötä tiedostosijainti, johon haluat asetustiedoston
     tallennettavan (vakio: nykyisen käyttäjän kotikansio).""")
 
-    configs_dir = os.path.expanduser("~user")
+    configs_dir = str(Path.home())
     configs_dir_value = input()
     if configs_dir_value != "":
         configs_dir = configs_dir_value
