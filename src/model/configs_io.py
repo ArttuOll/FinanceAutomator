@@ -3,7 +3,7 @@ import json
 import os
 
 
-class ConfigsWriter:
+class ConfigsIO:
     """Kirjoittaa käyttäjän asettamat asetukset asetusolion määrittämään
     sijaintiin"""
     def __init__(self, configs):

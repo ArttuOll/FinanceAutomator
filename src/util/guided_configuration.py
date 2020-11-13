@@ -1,7 +1,7 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
 from pathlib import Path
 import os
-from ..model.configs_writer import ConfigsWriter
+from ..model.configs_io import ConfigsIO
 
 
 def guided_configuration():
@@ -23,8 +23,8 @@ def guided_configuration():
             "categories_tags": categories_tags
     }
 
-    configs_writer = ConfigsWriter(configs)
-    configs_writer.write()
+    configs_io = ConfigsIO(configs)
+    configs_io.write()
 
 
 def choose_saving_and_transactions_dir():
