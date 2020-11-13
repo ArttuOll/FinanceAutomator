@@ -2,7 +2,7 @@
 #!/usr/bin/env python3
 
 from sys import argv
-from .model.guided_configuration import guided_configuration
+from .util.guided_configuration import guided_configuration
 from .model.configs_writer import ConfigsWriter
 
 GUIDED_CONFIG_SHORT = "-g"
