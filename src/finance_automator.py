@@ -3,7 +3,6 @@
 
 from sys import argv
 from .util.guided_configuration import guided_configuration
-from .model.configs_writer import ConfigsWriter
 
 GUIDED_CONFIG_SHORT = "-g"
 GUIDED_CONFIG = "--guided"
@@ -11,6 +10,4 @@ GUIDED_CONFIG = "--guided"
 main_argument = argv[1]
 
 if main_argument in GUIDED_CONFIG_SHORT or main_argument in GUIDED_CONFIG:
-    configs = guided_configuration()
-    configs_writer = ConfigsWriter(configs)
-    configs_writer.write()
+    guided_configuration()
