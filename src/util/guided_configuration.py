@@ -1,5 +1,4 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
-from pathlib import Path
 import os
 from ..model.configs_io import ConfigsIO
 
@@ -14,17 +13,15 @@ def guided_configuration():
 
     save_dir, transactions_dir = choose_saving_and_transactions_dir()
     categories_tags = read_categories_tags()
-    configs_dir = read_configs_dir()
 
     configs = {
-            "configs_dir": configs_dir,
             "transactions_dir": transactions_dir,
             "save_dir": save_dir,
             "categories_tags": categories_tags
     }
 
-    configs_io = ConfigsIO(configs)
-    configs_io.write()
+    configs_io = ConfigsIO()
+    configs_io.write(configs)
 
 
 def choose_saving_and_transactions_dir():
@@ -141,18 +138,3 @@ def lists_to_dict(list1, list2):
         dictionary[item1] = item2
 
     return dictionary
-
-
-def read_configs_dir():
-    """Lukee käyttäjältä tiedostosijainnin, johon hän haluaa asetustiedoston
-    tallennettavan"""
-
-    print("""Syötä tiedostosijainti, johon haluat asetustiedoston
-    tallennettavan (vakio: nykyisen käyttäjän kotikansio).""")
-
-    configs_dir = str(Path.home())
-    configs_dir_value = input()
-    if configs_dir_value != "":
-        configs_dir = configs_dir_value
-
-    return configs_dir
