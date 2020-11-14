@@ -31,12 +31,15 @@ class ConfigsIO:
                 data = configs_file.read()
                 configs = json.loads(data)
         except IOError:
-            print("""Asetuksia ei ole asetettu. Aseta asetukset joko
-                    manuaalisesti luomalla tiedosto nimeltä '.fa_configs.json'
-                    kotikansioosi ja kirjoittamalla asetustiedosto ohjeiden
-                    mukaan (fa --config --help).
+            print("""
+                    Asetuksia ei ole asetettu.
 
-                    Vaihtoehtoisesti voit luoda asetustiedoston ohjastusti
-                    kutsumalla 'fa --guided'.""")
+                    Aseta asetukset joko manuaalisesti luomalla tiedosto nimeltä '.fa_configs.json'
+                    kotikansioosi ja kirjoittamalla asetustiedosto ohjeiden mukaan 
+                    (fa --config --help).
+
+                    Vaihtoehtoisesti voit luoda asetustiedoston ohjastusti kutsumalla 
+                    'fa --guided'.
+                    """)
 
         return configs
