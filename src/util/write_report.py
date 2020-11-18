@@ -17,7 +17,7 @@ def write_report(locations, categories_tags, print_output=False):
     values_by_category = event_calculator.calculate_values()
     report_writer = ReportWriter(values_by_category, locations)
 
-    # report_writer.write_human_readable_report()
+    report_writer.write_human_readable_report()
     # report_writer.write_machine_readable_report()
 
     if print_output:
