@@ -1,10 +1,11 @@
 """Sovelluksen päätiedosto. Tulkitsee komentoriviparametrit ja kutsuu niitä
 vastaavia funkioita. Lukee asetukset asetustiedostosta."""
 
-from argparse import ArgumentParser
+from .util.parse_arguments import parse_arguments
 from .util.guided_configuration import guided_configuration
 from .model.configs_io import ConfigsIO
 from .util.write_report import write_report
+
 
 def handle_commands_not_requiring_settings(args):
     """Hoitaa sellaisten komentojen tulkinnan, jotka eivät vaadi tietoa
@@ -22,18 +23,14 @@ def handle_commands_requiring_settings(configs_object, args):
 
     if args.report:
         saving_location = configs_object["save_dir"]
+        transactions_dir = configs_object["transactions_dir"]
         categories_tags = configs_object["categories_tags"]
-        write_report(saving_location, categories_tags)
+        print_output = args.print
+        write_report(saving_location, transactions_dir, categories_tags,
+                     print_output=print_output)
 
 
-argument_parser = ArgumentParser()
-argument_parser.add_argument("-g", "--guided", action="store_true",
-                            help="Suorita ohjattu asetustiedoston luonti")
-argument_parser.add_argument("-r", "--report", action="store_true",
-                            help="""Kirjoittaa raportin viime kuukauden tilitapahtumista
-                                    tallennuskansiossa sijaitsevaan raporttitiedostoon.""")
-
-arguments = argument_parser.parse_args()
+arguments = parse_arguments()
 
 handle_commands_not_requiring_settings(arguments)
 
