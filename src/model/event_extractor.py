@@ -20,7 +20,6 @@ def clean_fragments(unclean_fragments):
     return fragments
 
 
-# TODO: muuta käyttämään Factory-suunnittelumallia
 class EventExtractor:
     """Lukee tilitapahtumat sisältävän tiedoston ja muuntaa sen Event-olioita
     sisältäväksi listaksi."""
