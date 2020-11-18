@@ -23,11 +23,14 @@ def handle_commands_requiring_settings(configs_object, args):
 
     if args.report:
         saving_location = configs_object["save_dir"]
-        transactions_dir = configs_object["transactions_dir"]
+        transactions_location = configs_object["transactions_dir"]
+        locations = {
+                "save" : saving_location,
+                "transactions": transactions_location
+        }
         categories_tags = configs_object["categories_tags"]
         print_output = args.print
-        write_report(saving_location, transactions_dir, categories_tags,
-                     print_output=print_output)
+        write_report(locations, categories_tags, print_output=print_output)
 
 
 arguments = parse_arguments()
