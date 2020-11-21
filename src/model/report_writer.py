@@ -1,9 +1,14 @@
+"""Määrittelee luokan ReportWriter ja sen riippuvuudet"""
 from datetime import datetime
 from os.path import join
 from decimal import Decimal
 import json
 
 class ReportWriter:
+    """Huolehtii talousraporttien kirjoittamisesta ja tulostamisesta. Raportti
+    kirjoitetaan konstruktorin parametrina annettavan
+    values_by_category-sanakirjan perusteella. Raporttien tallennussijainti
+    määritellään sanakirjaparametrin locations kohdassa "save" """
 
     def __init__(self, values_by_category, locations):
         self.values_by_category = values_by_category
@@ -12,6 +17,10 @@ class ReportWriter:
         self.timestamp = datetime.now()
 
     def write_human_readable_report(self):
+        """Kirjoittaa raportin selkokielisenä käyttäjän määrittämään
+        tallennuskansioon tiedostonimellä "fa_report.txt". Uudet raportit
+        kirjoitetaan aina samaan tiedostoon. """
+
         report = self._build_human_readable_report()
         filename = join(self.save_location, "fa_report.txt")
         with open(filename, "a", encoding="UTF-8") as human_readable_report:
@@ -26,9 +35,15 @@ class ReportWriter:
         return report
 
     def print_human_readable_report(self):
+        """Tulostaa raportin."""
+
         print(self._build_human_readable_report())
 
     def write_machine_readable_report(self):
+        """Kirjoittaa raportin JSON-muodossa käyttäjän määrittämään
+        tallennuskansioon tiedostonimellä "fa_report_mr.txt". Uudet raportit
+        kirjoitetaan aina samaan tiedostoon."""
+
         report = self._build_machine_readable_report()
         filename = join(self.save_location, "fa_report_mr.txt")
         # default on funktio, joka ajetaan kaikille kohdattaville oliolle,
