@@ -1,7 +1,6 @@
 """Määrittelee luokan ReportWriter ja sen riippuvuudet"""
 from datetime import datetime
 from os.path import join
-from decimal import Decimal
 import json
 
 class ReportWriter:
@@ -13,7 +12,6 @@ class ReportWriter:
     def __init__(self, values_by_category, locations):
         self.values_by_category = values_by_category
         self.save_location = locations["save"]
-        self.transactions_location = locations["transactions"]
         self.timestamp = datetime.now()
 
     def write_human_readable_report(self):
