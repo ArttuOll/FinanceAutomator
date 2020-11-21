@@ -14,7 +14,7 @@ class ReportWriter:
     def write_human_readable_report(self):
         report = self._build_human_readable_report()
         filename = join(self.save_location, "fa_report.txt")
-        with open(filename, "w", encoding="UTF-8") as human_readable_report:
+        with open(filename, "a", encoding="UTF-8") as human_readable_report:
             human_readable_report.write(report)
 
     def _build_human_readable_report(self):
