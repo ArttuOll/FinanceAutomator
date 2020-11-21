@@ -18,7 +18,7 @@ def write_report(locations, categories_tags, print_output=False):
     report_writer = ReportWriter(values_by_category, locations)
 
     report_writer.write_human_readable_report()
-    # report_writer.write_machine_readable_report()
+    report_writer.write_machine_readable_report()
 
     if print_output:
         report_writer.print_human_readable_report()
