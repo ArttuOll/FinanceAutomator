@@ -16,7 +16,7 @@ class ReportWriter:
             human_readable_report.write(report)
 
     def build_human_readable_report(self):
-        report = f"\nTalousraportti {self.timestamp}\n"
+        report = f"Talousraportti {self.timestamp}\n"
 
         for category, value in self.values_by_category.items():
             report += f"{category}: {value}\n"
