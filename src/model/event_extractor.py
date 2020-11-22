@@ -31,7 +31,6 @@ class EventExtractor:
         try:
             events_filename = self.__read_events_filename_from_directory(path)
             file = join(path, events_filename)
-            # TODO: varmistu tämän toiminnasta
             return self.__read_events_from_file(file)
         except FileNotFoundError:
             print("Tiedostoa ei ole olemassa.")
@@ -73,7 +72,7 @@ class EventExtractor:
 
             return Event.card_payment(date=date, name=name, amount=amount, location=location)
 
-        if fragments[2] == "PALKKA":
+        elif fragments[2] == "PALKKA":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -81,7 +80,7 @@ class EventExtractor:
 
             return Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
 
-        if fragments[2] == "AUTOM. NOSTO":
+        elif fragments[2] == "AUTOM. NOSTO":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -89,7 +88,7 @@ class EventExtractor:
 
             return Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
 
-        if fragments[2] == "TILISIIRTO":
+        elif fragments[2] == "TILISIIRTO":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -97,7 +96,7 @@ class EventExtractor:
 
             return Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
 
-        if fragments[2] == "VERKKOPANKKI":
+        elif fragments[2] == "VERKKOPANKKI":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -105,7 +104,7 @@ class EventExtractor:
 
             return Event.online_bank(date=date, name=name, amount=amount, message=message)
 
-        if fragments[2] == "SEPA PIKA":
+        elif fragments[2] == "SEPA PIKA":
             date = fragments[0]
             name = fragments[1]
             amount = fragments[4]
@@ -113,3 +112,6 @@ class EventExtractor:
 
             return Event.mobilepay(date=date, name=name, amount=amount,
                                    payment_number=payment_number)
+
+        else:
+            return None
