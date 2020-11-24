@@ -10,9 +10,10 @@ class ReportWriter:
     määritellään sanakirjaparametrin locations kohdassa "save" """
 
     def __init__(self, values_by_category, locations):
+        self.date_format = "%Y-%m-%d"
         self.values_by_category = values_by_category
         self.save_location = locations["save"]
-        self.timestamp = datetime.now()
+        self.timestamp = datetime.now().strftime(self.date_format)
 
     def write_human_readable_report(self):
         """Kirjoittaa raportin selkokielisenä käyttäjän määrittämään
