@@ -42,14 +42,28 @@ class ReportWriter:
         tallennuskansioon tiedostonimellä "fa_report_mr.txt". Uudet raportit
         kirjoitetaan aina samaan tiedostoon."""
 
-        report = self._build_machine_readable_report()
         filename = join(self.save_location, "fa_report_mr.txt")
+
+        reports = self._read_reports(filename)
+
+        new_report = self._build_machine_readable_report()
+        reports.append(new_report)
         # default on funktio, joka ajetaan kaikille kohdattaville oliolle,
         # joita ei voida serialisoida!
         with open(filename, "a", encoding="UTF-8") as report_file:
-            json.dump(report, report_file, ensure_ascii=False, indent=4, default=str)
+            json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
 
     def _build_machine_readable_report(self):
         report_dict = self.values_by_category
         report_dict["timestamp"] = self.timestamp
         return report_dict
+
+    def _read_reports(self, filename):
+        try:
+            with open(filename, "r", encoding="UTF-8") as report_file:
+                data = report_file.read()
+                return json.loads(data)
+        except IOError:
+            print("""Raporttitiedostoa ei löytynyt tallennussijainnista. Joko
+                  sitä ei ole vielä luotu tai se on siirretty.""")
+            return []
