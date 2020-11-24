@@ -50,7 +50,7 @@ class ReportWriter:
         reports.append(new_report)
         # default on funktio, joka ajetaan kaikille kohdattaville oliolle,
         # joita ei voida serialisoida!
-        with open(filename, "a", encoding="UTF-8") as report_file:
+        with open(filename, "w", encoding="UTF-8") as report_file:
             json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
 
     def _build_machine_readable_report(self):
