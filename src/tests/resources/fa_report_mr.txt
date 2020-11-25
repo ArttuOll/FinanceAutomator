@@ -1,0 +1,52 @@
+[
+    {
+        "afds": 0,
+        "Käteisnostot": 0,
+        "Tulot yht.": "1",
+        "Muut tulot": "5",
+        "Menot yht.": "-6",
+        "Muut menot": "1",
+        "Tase": "1",
+        "timestamp": "2020-11-24"
+    },
+    {
+        "afds": 1,
+        "Käteisnostot": 7,
+        "Tulot yht.": "-6",
+        "Muut tulot": "1",
+        "Menot yht.": "8",
+        "Muut menot": "-9",
+        "Tase": "9",
+        "timestamp": "2020-12-24"
+    },
+    {
+        "afds": 3,
+        "Käteisnostot": -1,
+        "Tulot yht.": "3",
+        "Muut tulot": "-6",
+        "Menot yht.": "14",
+        "Muut menot": "-8",
+        "Tase": "1",
+        "timestamp": "2021-1-24"
+    },
+    {
+        "afds": 2,
+        "Käteisnostot": 7,
+        "Tulot yht.": "9",
+        "Muut tulot": "-20",
+        "Menot yht.": "6",
+        "Muut menot": "-1",
+        "Tase": "6",
+        "timestamp": "2021-2-24"
+    },
+    {
+        "afds": -3,
+        "Käteisnostot": 3,
+        "Tulot yht.": "-2",
+        "Muut tulot": "4",
+        "Menot yht.": "3",
+        "Muut menot": "2",
+        "Tase": "2",
+        "timestamp": "2021-3-24"
+    }
+]
