@@ -27,8 +27,7 @@ class ReportReader:
             data = reports_file.read()
             all_reports = json.loads(data)
             self._format_reports(all_reports)
-            reports_after_start_date = self._get_reports_after_start_date(all_reports, start_date)
-            return self._sum_reports(reports_after_start_date)
+            return self._get_reports_after_start_date(all_reports, start_date)
 
     def _format_reports(self, reports):
         self._convert_timestamps_to_dates(reports)
@@ -55,19 +54,3 @@ class ReportReader:
                 reports_after_start_date.append(report)
 
         return reports_after_start_date
-
-    @staticmethod
-    def _sum_reports(reports):
-        values_by_category = reports[0]
-        values_by_category.pop("timestamp")
-
-        for i, report in enumerate(reports):
-            if i == 0:
-                continue
-
-            report.pop("timestamp")
-
-            for key, value in report.items():
-                values_by_category[key] += value
-
-        return values_by_category

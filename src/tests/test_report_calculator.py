@@ -1,21 +1,13 @@
-"""Sisältää yksikkötestit luokalle ReportReader."""
+"""Sisältää yksikkötestit luokalle ReportCalculator."""
 import datetime
 from decimal import Decimal
 
 import pytest
 
-from ..model.report_reader import ReportReader
+from ..model.report_calculator import ReportCalculator
 
-START_DATE = "2020-12-24"
-END_DATE = "2021-1-24"
-SAVE_DIR = "./resources"
 
-@pytest.fixture()
-def handler():
-    """Returns a ReportReader instantiated with test parameters."""
-    return ReportReader(SAVE_DIR)
-
-def test_read_from_date(handler):
+def _get_reports():
     dict1 = {
             'afds': Decimal('-3'),
             'Käteisnostot': Decimal('3'),
@@ -59,7 +51,25 @@ def test_read_from_date(handler):
             'timestamp': datetime.date(2020, 12, 24)
         }
 
-    expected = [dict1, dict2, dict3, dict4]
+    return [dict1, dict2, dict3, dict4]
 
-    actual = handler.read_from_date(START_DATE)
+@pytest.fixture()
+def handler():
+    """Returns a ReportReader instantiated with test parameters."""
+    return ReportCalculator(REPORTS)
+
+REPORTS = _get_reports()
+
+def test_sum_reports(handler):
+    expected = {
+            'afds': Decimal('3'),
+            'Käteisnostot': Decimal('16'),
+            'Tulot yht.': Decimal('3'),
+            'Muut tulot': Decimal('-21'),
+            'Menot yht.': Decimal('31'),
+            'Muut menot': Decimal('-16'),
+            'Tase': Decimal('18'),
+        }
+
+    actual = handler.sum_reports()
     assert expected == actual
