@@ -31,7 +31,7 @@ class ConfigsIO:
                 data = configs_file.read()
                 configs = json.loads(data)
         except IOError:
-            print("""
+            print(""" 
                     Asetuksia ei ole asetettu.
 
                     Aseta asetukset joko manuaalisesti luomalla tiedosto nimeltä '.fa_configs.json'
