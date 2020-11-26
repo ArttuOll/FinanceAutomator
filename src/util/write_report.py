@@ -41,4 +41,4 @@ def write_analytical_report(operation, start_date, save_dir, print_output=False,
         report_writer.write_human_readable_report(title=title)
 
         if print_output:
-            print(report_writer.print_human_readable_report())
+            report_writer.print_human_readable_report()
