@@ -1,14 +1,13 @@
 from os.path import join
 
 class ReportCalculator:
-    def __init__(self, reports):
-        self.reports = reports
 
-    def sum_reports(self):
-        values_by_category = self.reports[0]
+    @staticmethod
+    def sum_reports(reports):
+        values_by_category = reports[0]
         values_by_category.pop("timestamp")
 
-        for i, report in enumerate(self.reports):
+        for i, report in enumerate(reports):
             if i == 0:
                 continue
 
