@@ -22,24 +22,25 @@ class ReportWriter:
         raporttitiedostolle, mutta vaihtoehtoisen tiedostonimen voi antaa
         summaraporttien (joita ei lueta ohjelmallisesti) tallentamista varten."""
 
-        report = self._build_human_readable_report()
+        report = self._build_human_readable_report(title)
         filename = "fa_report.txt" if title in "" else title
         filepath = join(self.save_dir, filename)
         with open(filepath, "a", encoding="UTF-8") as human_readable_report:
             human_readable_report.write(report)
 
-    def _build_human_readable_report(self):
-        report = f"Talousraportti {self.timestamp}\n"
+    def _build_human_readable_report(self, title):
+        title = f"Talousraportti {self.timestamp}\n" if title in "" else title
+        report = title
 
         for category, value in self.values_by_category.items():
             report += f"{category}: {value}\n"
 
         return report
 
-    def print_human_readable_report(self):
+    def print_human_readable_report(self, title=""):
         """Tulostaa raportin."""
 
-        print(self._build_human_readable_report())
+        print(self._build_human_readable_report(title))
 
     def write_machine_readable_report(self):
         """Kirjoittaa raportin JSON-muodossa käyttäjän määrittämään
