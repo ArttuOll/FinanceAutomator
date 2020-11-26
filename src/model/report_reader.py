@@ -12,7 +12,6 @@ class ReportReader:
     löydetään raportti, jonka päivämäärä on pienempi kuin start_date."""
 
     # TODO: mahdollisuus lukea aikaväliltä
-    # TODO: pitäisikö lukeminen ja yhteen laskeminen erottaa omiin olioihinsa?
     def __init__(self, save_dir):
         self.date_format = "%Y-%m-%d"
         self.location = join(save_dir, "fa_report_mr.txt")
@@ -23,11 +22,22 @@ class ReportReader:
         kategorioittan yhteen, muodostaen summaraportin."""
 
         start_date = datetime.strptime(start_date, self.date_format).date()
-        with open(self.location, "r", encoding="UTF-8") as reports_file:
-            data = reports_file.read()
-            all_reports = json.loads(data)
-            self._format_reports(all_reports)
-            return self._get_reports_after_start_date(all_reports, start_date)
+        all_reports = self.read_all_reports(self.location)
+        return self._get_reports_after_start_date(all_reports, start_date)
+
+    def read_all_reports(self, location):
+        try:
+            with open(location, "r", encoding="UTF-8") as reports_file:
+                data = reports_file.read()
+                all_reports = json.loads(data)
+                self._format_reports(all_reports)
+                return all_reports
+
+        except IOError:
+            print("""Raporttitiedostoa ei löytynyt tallennussijainnista. Joko
+                  sitä ei ole vielä luotu tai se on siirretty.""")
+            return []
+
 
     def _format_reports(self, reports):
         self._convert_timestamps_to_dates(reports)
