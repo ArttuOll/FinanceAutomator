@@ -9,20 +9,23 @@ class ReportWriter:
     values_by_category-sanakirjan perusteella. Raporttien tallennussijainti
     määritellään sanakirjaparametrin locations kohdassa "save" """
 
-    def __init__(self, values_by_category, locations):
+    def __init__(self, values_by_category, save_dir):
         self.date_format = "%Y-%m-%d"
         self.values_by_category = values_by_category
-        self.save_location = locations["save"]
+        self.save_dir = save_dir
         self.timestamp = datetime.now().strftime(self.date_format)
 
-    def write_human_readable_report(self):
+    def write_human_readable_report(self, title=""):
         """Kirjoittaa raportin selkokielisenä käyttäjän määrittämään
         tallennuskansioon tiedostonimellä "fa_report.txt". Uudet raportit
-        kirjoitetaan aina samaan tiedostoon. """
+        kirjoitetaan aina samaan tiedostoon. "fa_report.txt" on vakio nimi
+        raporttitiedostolle, mutta vaihtoehtoisen tiedostonimen voi antaa
+        summaraporttien (joita ei lueta ohjelmallisesti) tallentamista varten."""
 
         report = self._build_human_readable_report()
-        filename = join(self.save_location, "fa_report.txt")
-        with open(filename, "a", encoding="UTF-8") as human_readable_report:
+        filename = "fa_report.txt" if title in "" else title
+        filepath = join(self.save_dir, filename)
+        with open(filepath, "a", encoding="UTF-8") as human_readable_report:
             human_readable_report.write(report)
 
     def _build_human_readable_report(self):
@@ -43,7 +46,7 @@ class ReportWriter:
         tallennuskansioon tiedostonimellä "fa_report_mr.txt". Uudet raportit
         kirjoitetaan aina samaan tiedostoon."""
 
-        filename = join(self.save_location, "fa_report_mr.txt")
+        filename = join(self.save_dir, "fa_report_mr.txt")
 
         reports = self._read_reports(filename)
 
