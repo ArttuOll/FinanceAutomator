@@ -10,7 +10,7 @@ SAVE_DIR = "./resources"
 @pytest.fixture()
 def handler():
     """Returns a ReportReader instantiated with test parameters."""
-    return ReportReader(START_DATE, END_DATE, SAVE_DIR)
+    return ReportReader(SAVE_DIR)
 
 def test_read_from_date(handler):
     expected = {
@@ -22,5 +22,5 @@ def test_read_from_date(handler):
         "Muut menot": -16,
         "Tase": 18
         }
-    actual = handler.read()
+    actual = handler.read_from_date(START_DATE)
     assert expected == actual

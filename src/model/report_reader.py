@@ -1,8 +1,9 @@
 """Määrittelee luokan ReportReader ja sen riippuvuudet"""
-from os.path import join
-from datetime import datetime
 import json
+from datetime import datetime
 from decimal import Decimal
+from os.path import join
+
 
 class ReportReader:
     """Lukee talousraportteja kansiossa save_dir tiedostosta fa_report_mr.txt
@@ -12,21 +13,21 @@ class ReportReader:
 
     # TODO: mahdollisuus lukea aikaväliltä
     # TODO: pitäisikö lukeminen ja yhteen laskeminen erottaa omiin olioihinsa?
-    def __init__(self, start_date, end_date, save_dir):
+    def __init__(self, save_dir):
         self.date_format = "%Y-%m-%d"
-        self.start_date = datetime.strptime(start_date, self.date_format).date()
-        self.end_date = datetime.strptime(end_date, self.date_format).date()
         self.location = join(save_dir, "fa_report_mr.txt")
 
-    def read(self):
+    def read_from_date(self, start_date):
         """Lukee talousraportit sijannista self.location, suodattaa niistä
         sellaiset, joiden päivämäärä on ennen self.start_datea ja laskee niiden arvot
         kategorioittan yhteen, muodostaen summaraportin."""
+
+        start_date = datetime.strptime(start_date, self.date_format).date()
         with open(self.location, "r", encoding="UTF-8") as reports_file:
             data = reports_file.read()
             all_reports = json.loads(data)
             self._format_reports(all_reports)
-            reports_after_start_date = self._get_reports_after_start_date(all_reports)
+            reports_after_start_date = self._get_reports_after_start_date(all_reports, start_date)
             return self._sum_reports(reports_after_start_date)
 
     def _format_reports(self, reports):
@@ -46,10 +47,11 @@ class ReportReader:
                 if key not in "timestamp":
                     report[key] = Decimal(value)
 
-    def _get_reports_after_start_date(self, reports):
+    @staticmethod
+    def _get_reports_after_start_date(reports, start_date):
         reports_after_start_date = []
         for report in reversed(reports):
-            if report["timestamp"] >= self.start_date:
+            if report["timestamp"] >= start_date:
                 reports_after_start_date.append(report)
 
         return reports_after_start_date
