@@ -53,12 +53,12 @@ def _get_reports():
 
     return [dict1, dict2, dict3, dict4]
 
+REPORTS = _get_reports()
+
 @pytest.fixture()
 def handler():
     """Returns a ReportReader instantiated with test parameters."""
-    return ReportCalculator()
-
-REPORTS = _get_reports()
+    return ReportCalculator(REPORTS)
 
 def test_sum_reports(handler):
     expected = {
@@ -71,5 +71,5 @@ def test_sum_reports(handler):
             'Tase': Decimal('18'),
         }
 
-    actual = handler.sum_reports(REPORTS)
+    actual = handler.sum_reports()
     assert expected == actual
