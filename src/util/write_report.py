@@ -12,6 +12,7 @@ def write_report(locations, categories_tags, print_output=False):
     arvojen laskemiseen. Tämän jälkeen tuotetaan raportti, joka tallennetaan
     sanakirjan locations avaimen "save":a vastaavaan sijaintiin. Tähän
     sijantiin kirjoitetaan sekä ihmis- että koneluettava raportti."""
+
     event_extractor = EventExtractor()
     events = event_extractor.events_from_file(locations["transactions"])
     event_calculator = EventCalculator(events, categories_tags)
@@ -26,16 +27,19 @@ def write_report(locations, categories_tags, print_output=False):
         report_writer.print_human_readable_report()
 
 def write_analytical_report(operation, start_date, save_dir, print_output=False, end_date=""):
-    # TODO: jos sekä start_date että end_date annettu, lue niiden väliltä. Jos
-    # vain start_date annettu, lue siitä tuoreimpaan
+    """Lukee raportit sijainnista save_dir ja laskee sellaisten raporttien
+    arvot kategorioittain yhteen, joiden päivämäärä on start_daten ja end_daten
+    välissä (molemmat itse mukaanluettuina). Jos end_datea ei ole annettu,
+    luetaan kaikki raportit start_datesta tulevaisuuteen. Tulokset kirjoitetaan
+    sijaintiin save_dir."""
+
     report_reader = ReportReader(save_dir)
     if operation in "sum":
-        title = f"fa_report_sum_{start_date}_{end_date}"
+        title = f"fa_report_sum_{start_date}_{end_date}.txt"
         values_by_category = []
-        if start_date and not end_date:
-            reports = report_reader.read_from_date(start_date)
-            report_calculator = ReportCalculator()
-            values_by_category = report_calculator.sum_reports(reports)
+        reports = report_reader.read_in_time_period(start_date, end_date=end_date)
+        report_calculator = ReportCalculator()
+        values_by_category = report_calculator.sum_reports(reports)
 
         report_writer = ReportWriter(values_by_category, save_dir)
         report_writer.write_human_readable_report(title=title)
