@@ -31,10 +31,25 @@ def _handle_report_operation_subcommands(report_parser):
     operation_parsers = report_parser.add_subparsers(dest="operation", help="""Käytä näitä
             komentoja raporttien käsittelyyn haluamallasi tavalla""")
 
+    _add_sum_parser(operation_parsers)
+    _add_average_parser(operation_parsers)
+
+
+def _add_sum_parser(operation_parsers):
     sum_parser = operation_parsers.add_parser("sum")
-    sum_parser.add_argument("-s", "--start", type=str, default="", help="""Aloituspäivämäärä""")
-    sum_parser.add_argument( "-e", "--end", type=str, default="", help="""Lopetuspäivämäärä""",)
+    _add_default_arguments(sum_parser)
     sum_parser.set_defaults(func=_handle_operation_commands)
+
+
+def _add_average_parser(operation_parsers):
+    average_parser = operation_parsers.add_parser("avg")
+    _add_default_arguments(average_parser)
+    average_parser.set_defaults(func=_handle_operation_commands)
+
+
+def _add_default_arguments(parser):
+    parser.add_argument("-s", "--start", type=str, default="", help="""Aloituspäivämäärä""")
+    parser.add_argument( "-e", "--end", type=str, default="", help="""Lopetuspäivämäärä""",)
 
 
 def _handle_report_commands(configs_object, args):

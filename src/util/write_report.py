@@ -34,13 +34,20 @@ def write_analytical_report(operation, start_date, save_dir, print_output=False,
     sijaintiin save_dir."""
 
     report_reader = ReportReader(save_dir)
+    reports = report_reader.read_in_time_period(start_date, end_date=end_date)
+    report_calculator = ReportCalculator(reports)
     if operation in "sum":
         title = f"fa_report_sum_{start_date}_{end_date}.txt"
-        values_by_category = []
-        reports = report_reader.read_in_time_period(start_date, end_date=end_date)
-        report_calculator = ReportCalculator()
-        values_by_category = report_calculator.sum_reports(reports)
+        values_by_category = report_calculator.sum_reports()
+        report_writer = ReportWriter(values_by_category, save_dir)
+        report_writer.write_human_readable_report(title=title)
 
+        if print_output:
+            report_writer.print_human_readable_report(title)
+
+    if operation in "avg":
+        title = f"fa_report_avg_{start_date}_{end_date}.txt"
+        values_by_category = report_calculator.average_reports()
         report_writer = ReportWriter(values_by_category, save_dir)
         report_writer.write_human_readable_report(title=title)
 
