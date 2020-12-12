@@ -6,7 +6,7 @@ from ..model.report_reader import ReportReader
 from ..model.report_calculator import ReportCalculator
 
 
-def write_report(locations, categories_tags, print_output=False):
+def write_report(configs, print_output=False):
     """Lukee tiliotteen sanakirjan locations kohtaa "transactions" vastaavasta
     kohdasta ja käyttää kategorioita ja niiden tunnisteita kategoriakohtaisten
     arvojen laskemiseen. Tämän jälkeen tuotetaan raportti, joka tallennetaan
@@ -14,11 +14,11 @@ def write_report(locations, categories_tags, print_output=False):
     sijantiin kirjoitetaan sekä ihmis- että koneluettava raportti."""
 
     event_extractor = EventExtractor()
-    events = event_extractor.events_from_file(locations["transactions"])
-    event_calculator = EventCalculator(events, categories_tags)
+    events = event_extractor.events_from_file(configs["transactions_dir"])
+    event_calculator = EventCalculator(events, configs["categories_tags"])
 
     values_by_category = event_calculator.calculate_values()
-    report_writer = ReportWriter(values_by_category, locations["save"])
+    report_writer = ReportWriter(values_by_category, configs["save_dir"])
 
     report_writer.write_human_readable_report()
     report_writer.write_machine_readable_report()
