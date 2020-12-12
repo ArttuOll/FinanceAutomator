@@ -1,10 +1,15 @@
 """Sovelluksen päätiedosto. Tulkitsee komentoriviparametrit ja kutsuu niitä
 vastaavia funkioita. Lukee asetukset asetustiedostosta."""
 
+import click
+
 from .model.configs_io import ConfigsIO
 from .util.guided_configuration import guided_configuration
 from .util.parse_arguments import parse_arguments
 
+@click.command
+def guided_config():
+    guided_configuration()
 
 def main():
     arguments = parse_arguments()
