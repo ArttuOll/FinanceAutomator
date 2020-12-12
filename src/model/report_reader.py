@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from decimal import Decimal
 from os.path import join
+from sys import stderr
 
 
 class ReportReader:
@@ -48,7 +49,8 @@ class ReportReader:
 
         except IOError:
             print("""Raporttitiedostoa ei löytynyt tallennussijainnista. Joko
-                  sitä ei ole vielä luotu tai se on siirretty.""")
+                  sitä ei ole vielä luotu tai se on siirretty. Jos tämä on
+                  ohjelman ensimmäinen suorituskerta, kaikki on hyvin.""", file=stderr)
             return []
 
     def _format_reports(self, reports):
