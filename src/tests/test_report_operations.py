@@ -4,7 +4,7 @@ from decimal import Decimal
 
 import pytest
 
-from ..model.report_calculator import ReportCalculator
+from ..util.report_operations import sum_reports
 
 
 def _get_reports():
@@ -25,7 +25,8 @@ def _get_reports():
             'Tulot yht.': Decimal ('9'),
             'Muut tulot': Decimal('-20'),
             'Menot yht.': Decimal('6'),
-            'Muut menot': Decimal('-1'), 'Tase': Decimal('6'),
+            'Muut menot': Decimal('-1'),
+            'Tase': Decimal('6'),
             'timestamp': datetime.date(2021, 2, 24)
         }
 
@@ -55,12 +56,7 @@ def _get_reports():
 
 REPORTS = _get_reports()
 
-@pytest.fixture()
-def handler():
-    """Returns a ReportReader instantiated with test parameters."""
-    return ReportCalculator(REPORTS)
-
-def test_sum_reports(handler):
+def test_sum_reports():
     expected = {
             'afds': Decimal('3'),
             'Käteisnostot': Decimal('16'),
@@ -71,5 +67,5 @@ def test_sum_reports(handler):
             'Tase': Decimal('18'),
         }
 
-    actual = handler.sum_reports()
+    actual = sum_reports(REPORTS)
     assert expected == actual
