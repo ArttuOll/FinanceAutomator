@@ -33,11 +33,12 @@ class ReportWriter:
         title = f"fina_avg_from_{start_date}_to_{end_date}.txt"
         self._write_operation_report(start_date, average_reports, title, end_date)
 
-    def write_sum_report(self, start_date, end_date=""):
+    def write_sum_report(self, start_date, end_date=None):
         title = f"fina_sum_from_{start_date}_to_{end_date}.txt"
         self._write_operation_report(start_date, sum_reports, title, end_date)
 
-    def _write_operation_report(self, start_date, operation_on_reports, title, end_date=""):
+    def _write_operation_report(self, start_date, operation_on_reports, title,
+            end_date=None):
         reports = self.report_reader.read_in_time_period(start_date, end_date=end_date)
         results = operation_on_reports(reports)
         self._write_human_readable_report(results, title=title)
