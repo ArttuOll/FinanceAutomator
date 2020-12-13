@@ -71,54 +71,46 @@ class EventExtractor:
         """Luo ja palauttaa oikean tyyppisen Event-olion perustuen
         tilitapahtumatiedostossa määriteltyyn tapahtumatyyppiin."""
 
-        if fragments[2] == "KORTTIOSTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            location = fragments[3]
+        date = fragments[0]
+        name = fragments[1]
+        amount = fragments[4]
 
-            return Event.card_payment(date=date, name=name, amount=amount, location=location)
+        event_types = {
+                "KORTTIOSTO": self._create_card_payment_event,
+                "PALKKA": self._create_salary_event,
+                "AUTOM. NOSTO": self._create_atm_withdrawal_event,
+                "TILISIIRTO": self._create_bank_transfer_event,
+                "VERKKOPANKKI": self._create_online_bank_event,
+                "SEPA PIKA": self._create_mobile_pay_event
+        }
 
-        elif fragments[2] == "PALKKA":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            salary_label = fragments[3]
+        create_event = event_types.get(fragments[2])
+        return create_event(date, name, amount, fragments[3])
 
-            return Event.salary(date=date, name=name, amount=amount, salary_label=salary_label)
+    @staticmethod
+    def _create_card_payment_event(date, name, amount, location):
+        return Event.card_payment(date, name, amount, location)
 
-        elif fragments[2] == "AUTOM. NOSTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            cardnumber = fragments[3]
+    @staticmethod
+    def _create_salary_event(date, name, amount, salary_label):
+        return Event.salary(date, name, amount, salary_label)
 
-            return Event.atm_withdrawal(date=date, name=name, amount=amount, cardnumber=cardnumber)
+    @staticmethod
+    def _create_atm_withdrawal_event(date, name, amount, card_number):
+        return Event.salary(date, name, amount, card_number)
 
-        elif fragments[2] == "TILISIIRTO":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            refnumber = fragments[3]
+    @staticmethod
+    def _create_bank_transfer_event(date, name, amount, reference_number):
+        return Event.salary(date, name, amount, reference_number)
 
-            return Event.bank_transfer(date=date, name=name, amount=amount, refnumber=refnumber)
+    @staticmethod
+    def _create_bank_transfer_event(date, name, amount, reference_number):
+        return Event.salary(date, name, amount, reference_number)
 
-        elif fragments[2] == "VERKKOPANKKI":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            message = fragments[3]
+    @staticmethod
+    def _create_online_bank_event(date, name, amount, message):
+        return Event.salary(date, name, amount, message)
 
-            return Event.online_bank(date=date, name=name, amount=amount, message=message)
-
-        elif fragments[2] == "SEPA PIKA":
-            date = fragments[0]
-            name = fragments[1]
-            amount = fragments[4]
-            payment_number = fragments[3]
-
-            return Event.mobilepay(date=date, name=name, amount=amount,
-                                   payment_number=payment_number)
-
-        else:
-            return None
+    @staticmethod
+    def _create_mobile_pay_event(date, name, amount, payment_number):
+        return Event.salary(date, name, amount, payment_number)
