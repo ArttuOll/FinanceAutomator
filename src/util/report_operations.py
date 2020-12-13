@@ -4,10 +4,13 @@ def sum_reports(reports):
     """Laskee raportteja kategorioittain yhteen ja palauttaa tulokset
     sanakirjana."""
 
-    template = reports.copy()
-    sum_report = {}
+    sum_report = reports[0]
+    sum_report.pop("timestamp")
+    for i, report in enumerate(reports):
+        # Ensimmäinen alkio on sisällytetty jo sum_reportiin!
+        if i == 0:
+            continue
 
-    for report in template:
         report.pop("timestamp")
 
         for key, value in report.items():
