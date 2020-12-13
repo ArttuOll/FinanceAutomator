@@ -5,25 +5,33 @@ import click
 
 from .model.configs_io import ConfigsIO
 from .util.guided_configuration import guided_configuration
-from .util.write_report import write_report
+from .model.report_writer import ReportWriter
 
 @click.group()
-def cli():
-    pass
+@click.pass_context
+def cli(context):
+    # Siltä varalta, että cli:tä kutsutaan muualta kuin tämän tiedoston alaosan
+    # if-blokista
+    context.ensure_object(dict)
 
-@click.command()
+    configs_io = ConfigsIO()
+    context.obj = configs_io.read()
+
+@cli.command()
 def guided_config():
     guided_configuration()
 
 # TODO: lisää luettavan tiedoston sijainti parametriksi ja poista
 # transactions_dir asetustiedostosta
-@click.command()
-def read():
-    configs_io = ConfigsIO()
-    configs = configs_io.read()
-    write_report(configs)
+@cli.command(short_help="Lukee tilitapahtumat ja kirjoittaa niistä raportin.")
+@click.pass_context
+def read(context):
+    report_writer = ReportWriter(context.obj)
+    report_writer.write_report()
 
-if __name__ == "__main__":
-    cli.add_command(guided_config)
-    cli.add_command(read)
-    cli()
+@cli.command()
+@click.pass_context
+@click.argument("start_date")
+def sum(context, start_date):
+    report_writer = ReportWriter(context.obj)
+    report_writer.write_sum_report(start_date)
