@@ -51,7 +51,7 @@ class ReportWriter:
             human_readable_report.write(report)
 
     def _build_human_readable_report(self, values_by_category, title):
-        title = f"\nTalousraportti {self.timestamp}\n" if title in "" else title
+        title = f"\nTalousraportti {self.timestamp}\n" if title in "" else f"\n{title}\n"
         report = title
 
         for category, value in values_by_category.items():
