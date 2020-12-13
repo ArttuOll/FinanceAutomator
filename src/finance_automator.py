@@ -31,7 +31,8 @@ def read(context):
 
 @cli.command()
 @click.pass_context
+@click.option("--end", help="Loppupäivämäärä")
 @click.argument("start_date")
-def sum(context, start_date):
+def sum(context, start_date, end):
     report_writer = ReportWriter(context.obj)
-    report_writer.write_sum_report(start_date)
+    report_writer.write_sum_report(start_date, end_date=end)
