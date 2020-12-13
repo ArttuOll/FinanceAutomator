@@ -1,6 +1,7 @@
 """Määrittelee luokan EventExtractor ja sen käyttämät apufunktiot."""
 from os import listdir
 from os.path import isfile, join
+from sys import stderr
 
 from ..model.event import Event
 
@@ -33,12 +34,14 @@ class EventExtractor:
             file = join(path, events_filename)
             return self.__read_events_from_file(file)
         except FileNotFoundError:
-            print("Tiedostoa ei ole olemassa.")
+            print("Tiedostoa ei ole olemassa.", file=stderr)
             return None
 
     def __read_events_filename_from_directory(self, path):
         file = [f for f in listdir(path) if isfile(join(path, f))]
         if len(file) != 1:
+            # TODO: tämä järjettömyys poistuu, kun read-komennolle voi antaa
+            # tiedoston suoraan
             print("Tiliotteen sisältävässä kansiossa oli useampi kuin yksi tiedosto."
                   " Vain yhtä odotettiin. Poista muut tiedostot ja aja ohjelma uudelleen.")
             return None
@@ -47,8 +50,9 @@ class EventExtractor:
 
     def __read_events_from_file(self, file):
         events = []
-        with open(file, "r", encoding="iso-8859-1") as events_file:
-            all_lines = events_file.read().splitlines()
+        try:
+            with open(file, "r", encoding="iso-8859-1") as events_file:
+                all_lines = events_file.read().splitlines()
 
             # Delete header row
             lines = all_lines[1:]
@@ -57,6 +61,9 @@ class EventExtractor:
                 frags_unclean = line.split(";")
                 frags = clean_fragments(frags_unclean)
                 events.append(self.__create_event(frags))
+        except IOError as error:
+            print("Virhe yritettäessä lukea tilitapahtumia tiedostosta: ", error, file=stderr)
+
 
         return events
 

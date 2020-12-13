@@ -1,11 +1,14 @@
 """Määrittelee luokan ReportWriter ja sen riippuvuudet"""
+import json
 from datetime import datetime
 from os.path import join
-import json
+from sys import stderr
+
 from ..model.event_calculator import EventCalculator
 from ..model.event_extractor import EventExtractor
-from ..util.report_operations import sum_reports, average_reports
+from ..util.report_operations import average_reports, sum_reports
 from .report_reader import ReportReader
+
 
 class ReportWriter:
     """Huolehtii talousraporttien kirjoittamisesta ja tulostamisesta. Raportti
@@ -55,8 +58,12 @@ class ReportWriter:
         report = self._build_human_readable_report(values_by_category, title)
         filename = "fa_report.txt" if title in "" else title
         filepath = join(self.configs["save_dir"], filename)
-        with open(filepath, "a", encoding="UTF-8") as human_readable_report:
-            human_readable_report.write(report)
+        try:
+            with open(filepath, "a", encoding="UTF-8") as human_readable_report:
+                human_readable_report.write(report)
+        except IOError as error:
+            print("Virhe yritettäessä kirjoittaa ihmisluettavaa raporttia: ", error, file=stderr)
+
 
     def _build_human_readable_report(self, values_by_category, title):
         title = f"\nTalousraportti {self.timestamp}\n" if title in "" else f"\n{title}\n"
@@ -81,8 +88,11 @@ class ReportWriter:
 
         # default on funktio, joka ajetaan kaikille kohdattaville oliolle,
         # joita ei voida serialisoida!
-        with open(filepath, "w", encoding="UTF-8") as report_file:
-            json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
+        try:
+            with open(filepath, "w", encoding="UTF-8") as report_file:
+                json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
+        except IOError as error:
+            print("Virhe yritettäessä kirjoittaa koneluettavaa raporttia: ", error, file=stderr)
 
     def _build_machine_readable_report(self, values_by_category):
         report_dict = values_by_category

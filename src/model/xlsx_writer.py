@@ -1,6 +1,7 @@
 """Määrittelee luokan XlsxWriter ja sen käyttämät apufunktiot"""
 from datetime import datetime
 from os import chdir, remove
+from sys import stderr
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Font
@@ -82,5 +83,5 @@ class XlsxWriter:
         # kuukauden takaista tiedostoa ei löydy
         try:
             remove("talousseuranta_autom" + str(self.past_month - 2) + ".xlsx")
-        except FileNotFoundError:
-            pass
+        except FileNotFoundError as error:
+            print("Virhe kirjoitettaessa xlsx-asiakirjaa: ", error, file=stderr)
