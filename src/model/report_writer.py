@@ -30,12 +30,20 @@ class ReportWriter:
         self._write_machine_readable_report(values_by_category)
 
     def write_avg_report(self, start_date, end_date=""):
-        title = f"fina_avg_from_{start_date}_to_{end_date}.txt"
+        title = self._get_title("avg", start_date, end_date)
         self._write_operation_report(start_date, average_reports, title, end_date)
 
     def write_sum_report(self, start_date, end_date=None):
-        title = f"fina_sum_from_{start_date}_to_{end_date}.txt"
+        title = self._get_title("sum", start_date, end_date)
         self._write_operation_report(start_date, sum_reports, title, end_date)
+
+    def _get_title(self, operation, start_date, end_date):
+        now = f"{datetime.now().year}-{datetime.now().month}-{datetime.now().day}"
+        title = f"fina_{operation}_from_{start_date}_to_{now}.txt"
+        if end_date is not None:
+            title = f"fina_{operation}_from_{start_date}_to_{end_date}.txt"
+
+        return title
 
     def _write_operation_report(self, start_date, operation_on_reports, title,
             end_date=None):
