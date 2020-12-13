@@ -1,7 +1,8 @@
 """Huolehtii asetusten lukemisesta ja kirjoittamisesta asetustiedostoon, joka
 sijaitsee käyttäjän kotikansiossa."""
 import json
-import os
+from os import path
+from sys import stderr
 from pathlib import Path
 
 
@@ -12,14 +13,18 @@ class ConfigsIO:
     def __init__(self):
         self.file_name = ".fa_configs.json"
         self.configs_location = str(Path.home())
-        self.location = os.path.join(self.configs_location, self.file_name)
+        self.location = path.join(self.configs_location, self.file_name)
 
     def write(self, configs):
         """Kirjoittaa asetukset JSON-muodossa käyttäjän kotikansioon
         tiedostonimellä 'fa_configs.json'"""
 
-        with open(self.location, "w", encoding="UTF-8") as configs_file:
-            json.dump(configs, configs_file, ensure_ascii=False, indent=4)
+        try:
+            with open(self.location, "w", encoding="UTF-8") as configs_file:
+                json.dump(configs, configs_file, ensure_ascii=False, indent=4)
+        except IOError as error:
+            print("Virhe yritettäessä kirjoittaa asetuksia: ", error, file=stderr)
+
 
     def read(self):
         """Lukee asetustiedoston käyttäjän kotikansiosta ja palauttaa asetukset
@@ -31,7 +36,7 @@ class ConfigsIO:
                 data = configs_file.read()
                 configs = json.loads(data)
         except IOError:
-            print(""" 
+            print("""
                     Asetuksia ei ole asetettu.
 
                     Aseta asetukset joko manuaalisesti luomalla tiedosto nimeltä '.fa_configs.json'
@@ -40,6 +45,6 @@ class ConfigsIO:
 
                     Vaihtoehtoisesti voit luoda asetustiedoston ohjastusti kutsumalla 
                     'fa --guided'.
-                    """)
+                    """, file=stderr)
 
         return configs
