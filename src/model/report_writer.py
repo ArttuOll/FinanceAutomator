@@ -8,6 +8,7 @@ from ..model.event_calculator import EventCalculator
 from ..model.event_extractor import EventExtractor
 from ..util.report_operations import average_reports, sum_reports
 from .report_reader import ReportReader
+from ..util.report_builders import build_human_readable_report, build_machine_readable_report
 
 
 class ReportWriter:
@@ -65,7 +66,7 @@ class ReportWriter:
             self._print_human_readable_report(results, title=title)
 
     def _write_human_readable_report(self, values_by_category, title=""):
-        report = self._build_human_readable_report(values_by_category, title)
+        report = build_human_readable_report(self.timestamp, values_by_category, title)
         filename = title if title not in "" else "fina_reports.txt"
         filepath = join(self.configs.get_config("save_dir"), filename)
         try:
@@ -75,24 +76,15 @@ class ReportWriter:
             print("Virhe yritettäessä kirjoittaa ihmisluettavaa raporttia: ", error, file=stderr)
 
 
-    def _build_human_readable_report(self, values_by_category, title):
-        title = f"\n{title}\n" if title not in "" else f"\nTalousraportti {self.timestamp}\n"
-        report = title
-
-        for category, value in values_by_category.items():
-            report += f"{category}: {value}\n"
-
-        return report
-
     def _print_human_readable_report(self, values_by_category, title=""):
-        print(self._build_human_readable_report(values_by_category, title))
+        print(build_human_readable_report(self.timestamp, values_by_category, title))
 
     def _write_machine_readable_report(self, values_by_category):
         filepath = join(self.configs.get_config("save_dir"), "fina_reports_mr.txt")
 
         reports = self.report_reader.read_all_reports(filepath)
 
-        new_report = self._build_machine_readable_report(values_by_category)
+        new_report = build_machine_readable_report(self.timestamp, values_by_category)
         reports.append(new_report)
 
         # default on funktio, joka ajetaan kaikille kohdattaville oliolle,
@@ -102,8 +94,3 @@ class ReportWriter:
                 json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
         except IOError as error:
             print("Virhe yritettäessä kirjoittaa koneluettavaa raporttia: ", error, file=stderr)
-
-    def _build_machine_readable_report(self, values_by_category):
-        report_dict = values_by_category
-        report_dict["timestamp"] = self.timestamp
-        return report_dict
