@@ -1,5 +1,6 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
 import os
+from sys import stderr
 from ..model.configs import Configs
 
 # TODO: mukauta configs-olioon
@@ -44,12 +45,12 @@ def get_and_validate_path(path_guidance_text):
         path = input()
 
         if not os.path.exists(path):
-            print("Polkua ei olemassa.")
+            print("Polkua ei olemassa.", file=stderr)
             continue
 
         if os.path.isfile(path):
             print(("Antamasi polku johti tiedostoon, mutta tarvitaan "
-                    "hakemistoon johtava polku."))
+                    "hakemistoon johtava polku."), file=stderr)
             continue
 
         return path
