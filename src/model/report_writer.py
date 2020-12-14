@@ -23,27 +23,32 @@ class ReportWriter:
         self.timestamp = datetime.now().strftime(self.date_format)
 
     def write_report(self):
-        event_extractor = EventExtractor()
-        events = event_extractor.extract_events_from_file(self.configs.get_config("transactions_file"))
-        event_calculator = EventCalculator(events, self.configs.get_config("categories_tags"))
-
-        values_by_category = event_calculator.calculate_values()
-
+        values_by_category = self._get_values_by_category()
         self._write_human_readable_report(values_by_category)
         self._write_machine_readable_report(values_by_category)
 
         if self.configs.verbose:
-            self._print_human_readable_report(values_by_category, "")
+            self._print_human_readable_report(values_by_category)
 
-    def write_avg_report(self, start_date, end_date=""):
-        title = self._get_title("avg", start_date, end_date)
+    def _get_values_by_category(self):
+        event_extractor = EventExtractor()
+        transactions_file = self.configs.get_config("transactions_file")
+        events = event_extractor.extract_events_from_file(transactions_file)
+
+        categories_tags = self.configs.get_config("categories_tags")
+        event_calculator = EventCalculator(events, categories_tags)
+        return event_calculator.calculate_values()
+
+    def write_avg_report(self, start_date, end_date="", title=""):
+        title = title if title not in "" else self._get_title("avg", start_date, end_date)
         self._write_operation_report(start_date, average_reports, title, end_date)
 
-    def write_sum_report(self, start_date, end_date=None):
-        title = self._get_title("sum", start_date, end_date)
-        self._write_operation_report(start_date, sum_reports, title, end_date)
+    def write_sum_report(self, start_date, end_date=None, title=""):
+        title = title if title not in "" else self._get_title("sum", start_date, end_date)
+        self._write_operation_report(start_date, sum_reports, title, end_date=end_date)
 
-    def _get_title(self, operation, start_date, end_date):
+    @staticmethod
+    def _get_title(operation, start_date, end_date):
         now = f"{datetime.now().year}-{datetime.now().month}-{datetime.now().day}"
         title = f"fina_{operation}_from_{start_date}_to_{now}.txt"
         if end_date is not None:
@@ -51,18 +56,17 @@ class ReportWriter:
 
         return title
 
-    def _write_operation_report(self, start_date, operation_on_reports, title,
-            end_date=None):
+    def _write_operation_report(self, start_date, operation_on_reports, title, end_date=None):
         reports = self.report_reader.read_in_time_period(start_date, end_date=end_date)
         results = operation_on_reports(reports)
         self._write_human_readable_report(results, title=title)
 
         if self.configs.verbose:
-            self._print_human_readable_report(results, "")
+            self._print_human_readable_report(results, title=title)
 
     def _write_human_readable_report(self, values_by_category, title=""):
         report = self._build_human_readable_report(values_by_category, title)
-        filename = "fa_report.txt" if title in "" else title
+        filename = title if title not in "" else "fina_reports.txt"
         filepath = join(self.configs.get_config("save_dir"), filename)
         try:
             with open(filepath, "a", encoding="UTF-8") as human_readable_report:
@@ -72,7 +76,7 @@ class ReportWriter:
 
 
     def _build_human_readable_report(self, values_by_category, title):
-        title = f"\nTalousraportti {self.timestamp}\n" if title in "" else f"\n{title}\n"
+        title = f"\n{title}\n" if title not in "" else f"\nTalousraportti {self.timestamp}\n"
         report = title
 
         for category, value in values_by_category.items():
@@ -84,10 +88,9 @@ class ReportWriter:
         print(self._build_human_readable_report(values_by_category, title))
 
     def _write_machine_readable_report(self, values_by_category):
-        filepath = join(self.configs.get_config("save_dir"), "fa_report_mr.txt")
+        filepath = join(self.configs.get_config("save_dir"), "fina_reports_mr.txt")
 
-        report_reader = ReportReader(self.configs.get_config("save_dir"))
-        reports = report_reader.read_all_reports(filepath)
+        reports = self.report_reader.read_all_reports(filepath)
 
         new_report = self._build_machine_readable_report(values_by_category)
         reports.append(new_report)

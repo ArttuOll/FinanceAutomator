@@ -30,9 +30,10 @@ def read(configs, transactions_file):
     report_writer.write_report()
 
 @cli.command()
-@click.option("--end", help="Loppupäivämäärä")
 @click.argument("start_date")
+@click.option("--end", help="Loppupäivämäärä")
+@click.option("--title", help="Raporttitiedoston nimi", default="")
 @pass_configs
-def sum(configs, start_date, end):
+def sum(configs, start_date, end, title):
     report_writer = ReportWriter(configs)
-    report_writer.write_sum_report(start_date, end_date=end)
+    report_writer.write_sum_report(start_date, end_date=end, title=title)
