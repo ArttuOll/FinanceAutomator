@@ -21,11 +21,11 @@ def cli(context, verbose):
 def guided_config():
     guided_configuration()
 
-# TODO: lisää luettavan tiedoston sijainti parametriksi ja poista
-# transactions_dir asetustiedostosta
 @cli.command(short_help="Lukee tilitapahtumat ja kirjoittaa niistä raportin.")
+@click.argument("transactions_file")
 @pass_configs
-def read(configs):
+def read(configs, transactions_file):
+    configs.set_config("transactions_file", transactions_file)
     report_writer = ReportWriter(configs)
     report_writer.write_report()
 

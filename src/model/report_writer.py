@@ -24,7 +24,7 @@ class ReportWriter:
 
     def write_report(self):
         event_extractor = EventExtractor()
-        events = event_extractor.events_from_file(self.configs.get_config("transactions_dir"))
+        events = event_extractor.extract_events_from_file(self.configs.get_config("transactions_file"))
         event_calculator = EventCalculator(events, self.configs.get_config("categories_tags"))
 
         values_by_category = event_calculator.calculate_values()

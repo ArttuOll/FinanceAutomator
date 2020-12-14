@@ -1,9 +1,10 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
 import os
 from sys import stderr
+
 from ..model.configs import Configs
 
-# TODO: mukauta configs-olioon
+
 def guided_configuration():
     """Ohjaa käyttää asettamaan ohjelman asetukset ja tallentaa ne."""
 
@@ -12,28 +13,23 @@ def guided_configuration():
             Paina enter syötettyäsi arvon. Syötä tyhjä arvo säilyttääksesi
             vakioasetuksen.""")
 
-    save_dir, transactions_dir = choose_saving_and_transactions_dir()
+    save_dir = choose_save_dir()
     categories_tags = read_categories_tags()
 
     configs = Configs()
-    configs.set_config("transactions_dir", transactions_dir)
     configs.set_config("save_dir", save_dir)
     configs.set_config("categories_tags", categories_tags)
     configs.write()
 
 
-def choose_saving_and_transactions_dir():
+def choose_save_dir():
     """Opastaa käyttäjää asettamaan ohjelman asetuksiin hakemiston, johon
-    ohjelman tuottamat laskentataulukot tallennetaan sekä hakemiston, josta
-    laskemiseen käytettävät tiliote löytyy."""
+    ohjelman tuottamat laskentataulukot tallennetaan."""
 
     save_path_guidance_text = ("Polku kansioon, johon haluat raportit tallennettavan.")
     edited_save_dir = get_and_validate_path(save_path_guidance_text)
 
-    transactions_dir_guidance_text = "Polku kansioon, joka sisältää tiliotteen."
-    edited_transactions_dir = get_and_validate_path(transactions_dir_guidance_text)
-
-    return edited_save_dir, edited_transactions_dir
+    return edited_save_dir
 
 
 def get_and_validate_path(path_guidance_text):
