@@ -9,11 +9,12 @@ from .model.report_writer import ReportWriter
 
 pass_configs = click.make_pass_decorator(Configs, ensure=True)
 
-# TODO: jatka asetusten käytön siirtämistä asetusoliolle
 @click.group()
+@click.option("--verbose", "-v", is_flag=True, help="Lisää ulostulon määrää")
 @click.pass_context
-def cli(context):
+def cli(context, verbose):
     context.obj = Configs()
+    context.obj.verbose = verbose
     context.obj.read()
 
 @cli.command()

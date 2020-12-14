@@ -32,6 +32,9 @@ class ReportWriter:
         self._write_human_readable_report(values_by_category)
         self._write_machine_readable_report(values_by_category)
 
+        if self.configs.verbose:
+            self._print_human_readable_report(values_by_category, "")
+
     def write_avg_report(self, start_date, end_date=""):
         title = self._get_title("avg", start_date, end_date)
         self._write_operation_report(start_date, average_reports, title, end_date)
@@ -53,6 +56,9 @@ class ReportWriter:
         reports = self.report_reader.read_in_time_period(start_date, end_date=end_date)
         results = operation_on_reports(reports)
         self._write_human_readable_report(results, title=title)
+
+        if self.configs.verbose:
+            self._print_human_readable_report(results, "")
 
     def _write_human_readable_report(self, values_by_category, title=""):
         report = self._build_human_readable_report(values_by_category, title)
