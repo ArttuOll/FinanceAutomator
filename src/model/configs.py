@@ -6,7 +6,7 @@ from sys import stderr
 from pathlib import Path
 
 
-class ConfigsIO:
+class Configs:
     """Kirjoittaa käyttäjän asettamat asetukset asetusolion määrittämään
     sijaintiin"""
 
@@ -14,27 +14,26 @@ class ConfigsIO:
         self.file_name = ".fa_configs.json"
         self.configs_location = str(Path.home())
         self.location = path.join(self.configs_location, self.file_name)
+        self.configs = {}
 
-    def write(self, configs):
+    def write(self):
         """Kirjoittaa asetukset JSON-muodossa käyttäjän kotikansioon
         tiedostonimellä 'fa_configs.json'"""
 
         try:
             with open(self.location, "w", encoding="UTF-8") as configs_file:
-                json.dump(configs, configs_file, ensure_ascii=False, indent=4)
+                json.dump(self.configs, configs_file, ensure_ascii=False, indent=4)
         except IOError as error:
             print("Virhe yritettäessä kirjoittaa asetuksia: ", error, file=stderr)
-
 
     def read(self):
         """Lukee asetustiedoston käyttäjän kotikansiosta ja palauttaa asetukset
         sanakirjana"""
 
-        configs = {}
         try:
             with open(self.location, "r", encoding="UTF-8") as configs_file:
                 data = configs_file.read()
-                configs = json.loads(data)
+                self.configs = json.loads(data)
         except IOError:
             print("""
                     Asetuksia ei ole asetettu.
@@ -47,4 +46,8 @@ class ConfigsIO:
                     'fa --guided'.
                     """, file=stderr)
 
-        return configs
+    def get_config(self, key):
+        return self.configs.get(key)
+
+    def set_config(self, key, value):
+        self.configs[key] = value

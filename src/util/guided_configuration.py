@@ -1,8 +1,8 @@
 """Ohjaa käyttäjää asettamaan ohjelman asetukset ja palauttaa ne sanakirjana"""
 import os
-from ..model.configs_io import ConfigsIO
+from ..model.configs import Configs
 
-
+# TODO: mukauta configs-olioon
 def guided_configuration():
     """Ohjaa käyttää asettamaan ohjelman asetukset ja tallentaa ne."""
 
@@ -14,14 +14,11 @@ def guided_configuration():
     save_dir, transactions_dir = choose_saving_and_transactions_dir()
     categories_tags = read_categories_tags()
 
-    configs = {
-            "transactions_dir": transactions_dir,
-            "save_dir": save_dir,
-            "categories_tags": categories_tags
-    }
-
-    configs_io = ConfigsIO()
-    configs_io.write(configs)
+    configs = Configs()
+    configs.set_config("transactions_dir", transactions_dir)
+    configs.set_config("save_dir", save_dir)
+    configs.set_config("categories_tags", categories_tags)
+    configs.write()
 
 
 def choose_saving_and_transactions_dir():

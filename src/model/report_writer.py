@@ -18,14 +18,14 @@ class ReportWriter:
 
     def __init__(self, configs):
         self.configs = configs
-        self.report_reader = ReportReader(configs["save_dir"])
+        self.report_reader = ReportReader(configs.get_config("save_dir"))
         self.date_format = "%Y-%m-%d"
         self.timestamp = datetime.now().strftime(self.date_format)
 
     def write_report(self):
         event_extractor = EventExtractor()
-        events = event_extractor.events_from_file(self.configs["transactions_dir"])
-        event_calculator = EventCalculator(events, self.configs["categories_tags"])
+        events = event_extractor.events_from_file(self.configs.get_config("transactions_dir"))
+        event_calculator = EventCalculator(events, self.configs.get_config("categories_tags"))
 
         values_by_category = event_calculator.calculate_values()
 
@@ -57,7 +57,7 @@ class ReportWriter:
     def _write_human_readable_report(self, values_by_category, title=""):
         report = self._build_human_readable_report(values_by_category, title)
         filename = "fa_report.txt" if title in "" else title
-        filepath = join(self.configs["save_dir"], filename)
+        filepath = join(self.configs.get_config("save_dir"), filename)
         try:
             with open(filepath, "a", encoding="UTF-8") as human_readable_report:
                 human_readable_report.write(report)
@@ -78,9 +78,9 @@ class ReportWriter:
         print(self._build_human_readable_report(values_by_category, title))
 
     def _write_machine_readable_report(self, values_by_category):
-        filepath = join(self.configs["save_dir"], "fa_report_mr.txt")
+        filepath = join(self.configs.get_config("save_dir"), "fa_report_mr.txt")
 
-        report_reader = ReportReader(self.configs["save_dir"])
+        report_reader = ReportReader(self.configs.get_config("save_dir"))
         reports = report_reader.read_all_reports(filepath)
 
         new_report = self._build_machine_readable_report(values_by_category)
