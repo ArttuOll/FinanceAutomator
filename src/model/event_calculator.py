@@ -1,15 +1,10 @@
 """Määrittelee luokan EventCalculator ja sen käyttämät apufunktiot."""
 from decimal import Decimal
+from itertools import accumulate
 
 def _sort_by_sign(events):
-    negative_events = []
-    positive_events = []
-    for event in events:
-        if event.amount < 0:
-            negative_events.append(event)
-        else:
-            positive_events.append(event)
-
+    negative_events = [event for event in events if event.amount < 0]
+    positive_events = [event for event in events if event.amount > 0]
     return positive_events, negative_events
 
 
