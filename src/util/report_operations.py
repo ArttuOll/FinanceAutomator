@@ -22,14 +22,9 @@ def average_reports(reports):
     """Laskee raporteille kategorioittain keskiarvon ja palauttaa tulokset
     sanakirjana."""
 
-    template = reports.copy()
-    average_report = {}
-
-    for report in template:
-        report.pop("timestamp")
-
-        # TODO: keskiarvon laskeminen
-        for key, value in report.items():
-            average_report[key] += value
+    average_report = sum_reports(reports)
+    for key in average_report.keys():
+        average = average_report[key] / len(reports)
+        average_report[key] = average
 
     return average_report

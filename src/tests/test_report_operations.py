@@ -4,9 +4,10 @@ from decimal import Decimal
 
 import pytest
 
-from ..util.report_operations import sum_reports
+from ..util.report_operations import average_reports, sum_reports
 
 
+@pytest.fixture
 def _get_reports():
     dict1 = {
             'afds': Decimal('-3'),
@@ -54,9 +55,7 @@ def _get_reports():
 
     return [dict1, dict2, dict3, dict4]
 
-REPORTS = _get_reports()
-
-def test_sum_reports():
+def test_sum_reports(_get_reports):
     expected = {
             'afds': Decimal('3'),
             'Käteisnostot': Decimal('16'),
@@ -67,5 +66,19 @@ def test_sum_reports():
             'Tase': Decimal('18'),
         }
 
-    actual = sum_reports(REPORTS)
+    actual = sum_reports(_get_reports)
+    assert expected == actual
+
+def test_average_reports(_get_reports):
+    expected = {
+            'afds': Decimal('0.75'),
+            'Käteisnostot': Decimal('4'),
+            'Tulot yht.': Decimal('1'),
+            'Muut tulot': Decimal('-5.25'),
+            'Menot yht.': Decimal('7.75'),
+            'Muut menot': Decimal('-4'),
+            'Tase': Decimal('4.5'),
+        }
+
+    actual = average_reports(_get_reports)
     assert expected == actual
