@@ -59,7 +59,7 @@ def test_read_from_date_to_current_month(handler):
             'timestamp': datetime.date(2020, 12, 24)
         }
 
-    expected = [dict1, dict2, dict3, dict4]
+    expected = [dict4, dict3, dict2, dict1]
 
     actual = handler.read_in_time_period(START_DATE)
     assert expected == actual
@@ -97,6 +97,16 @@ def test_read_from_date_to_date(handler):
             'timestamp': datetime.date(2020, 12, 24)
         }
 
-    expected = [dict1, dict2, dict3]
+    expected = [dict3, dict2, dict1]
     actual = handler.read_in_time_period(START_DATE, END_DATE)
+    assert expected == actual
+
+def test_read_category_values_in_time_period(handler):
+    expected = [Decimal(1), Decimal(3), Decimal(2)]
+    actual = handler.get_category_values_in_time_period(START_DATE, "afds", end_date=END_DATE)
+    assert expected == actual
+
+def test_read_category_values_until_current_month(handler):
+    expected = [Decimal(1), Decimal(3), Decimal(2), Decimal(-3)]
+    actual = handler.get_category_values_in_time_period(START_DATE, "afds")
     assert expected == actual
