@@ -6,6 +6,7 @@ import click
 from .model.configs import Configs
 from .util.guided_configuration import guided_configuration
 from .model.report_writer import ReportWriter
+from .model.graph_drawer import GraphDrawer
 
 pass_configs = click.make_pass_decorator(Configs, ensure=True)
 
@@ -46,3 +47,13 @@ def sum(configs, start_date, end, title):
 def avg(configs, start_date, end, title):
     report_writer = ReportWriter(configs)
     report_writer.write_avg_report(start_date, end_date=end, title=title)
+
+@cli.command()
+@click.argument("start_date")
+@click.argument("category")
+@click.option("--end", help="Loppupäivämäärä")
+# @click.option("--title", help="Kuvaajan otsake", default="")
+@pass_configs
+def graph(configs, start_date, category, end):
+    graph_drawer = GraphDrawer(configs)
+    graph_drawer.draw(start_date, category, end)
