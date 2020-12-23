@@ -14,7 +14,7 @@ class ReportReader:
 
     def __init__(self, save_dir):
         self.date_format = "%Y-%m-%d"
-        self.location = join(save_dir, "fa_report_mr.txt")
+        self.location = join(save_dir, "fina_reports_mr.txt")
         self.max_date = "3000-1-1"
 
     def get_category_values_in_time_period(self, start_date, category, end_date=None):
