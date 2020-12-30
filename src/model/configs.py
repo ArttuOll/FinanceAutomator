@@ -11,14 +11,14 @@ class Configs:
     sijaintiin"""
 
     def __init__(self):
-        self.file_name = ".fa_configs.json"
+        self.file_name = ".fina_configs.json"
         self.configs_location = str(Path.home())
         self.location = path.join(self.configs_location, self.file_name)
         self.configs = {}
 
     def write(self):
         """Kirjoittaa asetukset JSON-muodossa käyttäjän kotikansioon
-        tiedostonimellä 'fa_configs.json'"""
+        tiedostonimellä '.fina_configs.json'"""
 
         try:
             with open(self.location, "w", encoding="UTF-8") as configs_file:
