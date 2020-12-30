@@ -23,7 +23,7 @@ def guided_config():
     guided_configuration()
 
 @cli.command(short_help="Lue tilitapahtumatiedosto ja kirjoita siitä raportti")
-@click.argument("transactions_file")
+@click.argument("transactions_file", type=click.Path(exists=True))
 @pass_configs
 def read(configs, transactions_file):
     configs.set_config("transactions_file", transactions_file)
