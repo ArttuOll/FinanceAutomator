@@ -1,14 +1,22 @@
+"""Määrittelee luokan GraphDrawer ja sen riippuvuudet"""
+
 from matplotlib import pyplot
 
 from .report_reader import ReportReader
 
 
 class GraphDrawer:
+    """Piirtää kuvaajia, jotka kuvaavat tietyn meno- tai kulukategorian arvoja viimeisimmän vuoden
+    aikana"""
+
     def __init__(self, configs):
         self.x_values = list(range(1, 13))
         self.save_dir = configs.get_config("save_dir")
 
     def draw(self, start_date, category, end_date=None):
+        """Piirtää kuvaajan kategorian category arvoista aikavälillä [start_date, end_date]. Jos
+        endend_datea ei ole annettu, piirretään kuvaaja tuoreimpaan kategorian arvoon asti."""
+
         y_values = self._calculate_y(start_date, category, end_date)
         pyplot.plot(self.x_values, y_values)
         pyplot.xlabel("Kuukausi")

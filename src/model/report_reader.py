@@ -7,10 +7,8 @@ from sys import stderr
 
 
 class ReportReader:
-    """Lukee talousraportteja kansiossa save_dir tiedostosta fa_report_mr.txt
-    ja laskee kategorioittan yhteen niiden arvot, tuottaen summaraportin.
-    Raporttien lukeminen aloitetaan tuoreimmasta raportista ja jatkuu, kunnes
-    löydetään raportti, jonka päivämäärä on pienempi kuin start_date."""
+    """Lukee talousraportteja kansiossa asetuksissa määritetystä tallennuskansiosta, tiedostosta
+    fina_reports_mr.txt"""
 
     def __init__(self, save_dir):
         self.date_format = "%Y-%m-%d"
@@ -18,6 +16,10 @@ class ReportReader:
         self.max_date = "3000-1-1"
 
     def get_category_values_in_time_period(self, start_date, category, end_date=None):
+        """Palauttaa listan annetun kategorian category arvoista aikavälillä [start_date,
+        end_date]. Jos end_datea ei ole annettu, palautetaan kaikki arvot start_datesta
+        eteenpäin."""
+
         end_date = end_date if end_date is not None else self.max_date
         reports_in_time_period = self.read_in_time_period(start_date, end_date)
         category_values_in_time_period = []
@@ -27,10 +29,9 @@ class ReportReader:
         return category_values_in_time_period
 
     def read_in_time_period(self, start_date, end_date=None):
-        """Lukee talousraportit sijannista self.location, suodattaa niistä
-        sellaiset, joiden päivämäärä on start_daten ja end_daten välissä ja
-        laskee niiden arvot kategorioittan yhteen, muodostaen summaraportin.
-        Jos end_datea ei ole annettu, luetaan raportit tuoreimpaan asti."""
+        """Lukee talousraportit asetuksissa määritetystä tallennuskansiosta, suodattaa niistä
+        sellaiset, joiden päivämäärä on start_daten ja end_daten välissä.  Jos end_datea ei ole
+        annettu, luetaan raportit tuoreimpaan asti."""
 
         start_date = datetime.strptime(start_date, self.date_format).date()
         end_date = self._parse_end_date(end_date)

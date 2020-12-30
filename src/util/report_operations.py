@@ -1,8 +1,7 @@
-"""Määrittelee luokan ReportCalculator ja sen riippuvuudet"""
+"""Määrittelee laskutoimitusten raporteilla suorittamiseksi vaadittavat funktiot"""
 
 def sum_reports(reports):
-    """Laskee raportteja kategorioittain yhteen ja palauttaa tulokset
-    sanakirjana."""
+    """Laskee raportteja kategorioittain yhteen ja palauttaa tulokset sanakirjana."""
 
     sum_report = reports[0]
     sum_report.pop("timestamp")
@@ -19,8 +18,7 @@ def sum_reports(reports):
     return sum_report
 
 def average_reports(reports):
-    """Laskee raporteille kategorioittain keskiarvon ja palauttaa tulokset
-    sanakirjana."""
+    """Laskee raporteille kategorioittain keskiarvon ja palauttaa tulokset sanakirjana."""
 
     average_report = sum_reports(reports)
     for key in average_report.keys():

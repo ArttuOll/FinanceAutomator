@@ -8,6 +8,9 @@ from .util.guided_configuration import guided_configuration
 from .model.report_writer import ReportWriter
 from .model.graph_drawer import GraphDrawer
 
+# Luo uuden dekoraattorin, jota voidaan käyttää configs-olion tarjoamiseksi sitä tarvitseville
+# komennoille. ensure=True luo configs-olion, jos sitä ei ole tätä dekoraattoria käytettäessä vielä
+# olemassa
 pass_configs = click.make_pass_decorator(Configs, ensure=True)
 
 @click.group()

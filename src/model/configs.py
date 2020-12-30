@@ -1,5 +1,6 @@
-"""Huolehtii asetusten lukemisesta ja kirjoittamisesta asetustiedostoon, joka
-sijaitsee käyttäjän kotikansiossa."""
+"""Huolehtii asetusten lukemisesta ja kirjoittamisesta asetustiedostoon, joka sijaitsee käyttäjän
+kotikansiossa."""
+
 import json
 from os import path
 from sys import stderr
@@ -7,8 +8,7 @@ from pathlib import Path
 
 
 class Configs:
-    """Kirjoittaa käyttäjän asettamat asetukset asetusolion määrittämään
-    sijaintiin"""
+    """Kirjoittaa käyttäjän asettamat asetukset asetusolion määrittämään sijaintiin"""
 
     def __init__(self):
         self.file_name = ".fina_configs.json"
@@ -17,8 +17,8 @@ class Configs:
         self.configs = {}
 
     def write(self):
-        """Kirjoittaa asetukset JSON-muodossa käyttäjän kotikansioon
-        tiedostonimellä '.fina_configs.json'"""
+        """Kirjoittaa asetukset JSON-muodossa käyttäjän kotikansioon tiedostonimellä
+        '.fina_configs.json'"""
 
         try:
             with open(self.location, "w", encoding="UTF-8") as configs_file:
@@ -27,8 +27,7 @@ class Configs:
             print("Virhe yritettäessä kirjoittaa asetuksia: ", error, file=stderr)
 
     def read(self):
-        """Lukee asetustiedoston käyttäjän kotikansiosta ja palauttaa asetukset
-        sanakirjana"""
+        """Lukee asetustiedoston käyttäjän kotikansiosta ja palauttaa asetukset sanakirjana"""
 
         try:
             with open(self.location, "r", encoding="UTF-8") as configs_file:
@@ -47,7 +46,9 @@ class Configs:
                     """, file=stderr)
 
     def get_config(self, key):
+        """Palauttaa annettua avainta key vastaavan asetuksen arvon"""
         return self.configs.get(key)
 
     def set_config(self, key, value):
+        """Asettaa annettua avainta key vastaavan asetuksen arvon"""
         self.configs[key] = value

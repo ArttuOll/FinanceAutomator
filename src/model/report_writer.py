@@ -12,10 +12,7 @@ from ..util.report_builders import build_human_readable_report, build_machine_re
 
 
 class ReportWriter:
-    """Huolehtii talousraporttien kirjoittamisesta ja tulostamisesta. Raportti
-    kirjoitetaan konstruktorin parametrina annettavan
-    values_by_category-sanakirjan perusteella. Raporttien tallennussijainti
-    määritellään sanakirjaparametrin locations kohdassa "save" """
+    """Huolehtii talousraporttien kirjoittamisesta ja tulostamisesta."""
 
     def __init__(self, configs):
         self.configs = configs
@@ -24,6 +21,9 @@ class ReportWriter:
         self.timestamp = datetime.now().strftime(self.date_format)
 
     def write_report(self):
+        """Kirjoittaa ihmis- ja koneluettavan raportin asetuksien kohdassa 'save_dir' määritettyyn
+        tallennushakemistoon."""
+
         values_by_category = self._get_values_by_category()
         self._write_human_readable_report(values_by_category)
         self._write_machine_readable_report(values_by_category)
@@ -41,10 +41,18 @@ class ReportWriter:
         return event_calculator.calculate_values()
 
     def write_avg_report(self, start_date, end_date="", title=""):
+        """Kirjoittaa raportin, joka sisältää kunkin kulu- ja menokategorian keskiarvot aikavälillä
+        [start_date, end_date] laskettuna. Raportti tallennetaan asetusten kohdassa 'save_dir'
+        määritettyyn hakemistoon"""
+
         title = title if title not in "" else self._get_title("avg", start_date, end_date)
         self._write_operation_report(start_date, average_reports, title, end_date)
 
     def write_sum_report(self, start_date, end_date=None, title=""):
+        """Kirjoittaa raportin, joka sisältää kunkin kulu- ja menokategorian summan aikavälillä
+        [start_date, end_date] laskettuna. Raportti tallennetaan asetusten kohdassa 'save_dir'
+        määritettyyn hakemistoon"""
+
         title = title if title not in "" else self._get_title("sum", start_date, end_date)
         self._write_operation_report(start_date, sum_reports, title, end_date=end_date)
 
