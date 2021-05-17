@@ -28,7 +28,7 @@ class ReportWriter:
         self._write_human_readable_report(values_by_category)
         self._write_machine_readable_report(values_by_category)
 
-        if self.configs.verbose:
+        if self.configs.get_config("verbose"):
             self._print_human_readable_report(values_by_category)
 
     def _get_values_by_category(self):

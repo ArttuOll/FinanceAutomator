@@ -18,8 +18,8 @@ pass_configs = click.make_pass_decorator(Configs, ensure=True)
 @click.pass_context
 def cli(context, verbose):
     context.obj = Configs()
-    context.obj.verbose = verbose
     context.obj.read()
+    context.obj.set_config("verbose", verbose)
 
 @cli.command(short_help="Suorita ohjattu asetustiedoston luominen")
 def guided_config():
