@@ -30,8 +30,8 @@ class EventExtractor:
 
         try:
             return self.__read_events_from_file(transactions_file)
-        except IOError as error:
-            print("Virhe yritettäessä lukea tilitapahtumia tiedostosta: ", error, file=stderr)
+        except (IOError, TypeError) as error:
+            print(f"Virhe yritettäessä lukea tilitapahtumia tiedostosta: {error}. Onko tilitapahtumatiedosto määritelty oikein?", file=stderr)
             return []
 
     def __read_events_from_file(self, file):
