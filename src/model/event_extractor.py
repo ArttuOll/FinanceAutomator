@@ -86,10 +86,6 @@ class EventExtractor:
         return Event.salary(date, name, amount, reference_number)
 
     @staticmethod
-    def _create_bank_transfer_event(date, name, amount, reference_number):
-        return Event.salary(date, name, amount, reference_number)
-
-    @staticmethod
     def _create_online_bank_event(date, name, amount, message):
         return Event.salary(date, name, amount, message)
 
