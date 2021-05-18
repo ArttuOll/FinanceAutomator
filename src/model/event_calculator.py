@@ -78,27 +78,18 @@ class EventCalculator:
                 total += expense.amount
         return total
 
-    def calculate_values(self):
+    def calculate_values_by_category(self, include_totals=True):
         """Laskee käyttäjän antamien sekä vakiotilitapahtumakategorioiden
         arvot ja palauttaa ne sanakirjana."""
 
         values_by_category = self.__count_events_by_category()
-
-        # Lasketaan käteisnostot
-        values_by_category["Käteisnostot"] = self.__count_atm_events()
-
-        # Lasketaan kokonaistulot
-        values_by_category["Tulot yht."] = _count_sum_of_events(self.incomes)
-
-        # Lasketaan muut tulot
         values_by_category["Muut tulot"] = _count_uncategorised_income(values_by_category)
-
-        # Lasketaan kokonaiskulut
-        values_by_category["Menot yht."] = _count_sum_of_events(self.expenses)
-
-        # Lasketaan muut kulut
         values_by_category["Muut menot"] = _count_uncategorised_expenses(values_by_category)
 
-        values_by_category["Tase"] = self.__count_balance()
+        if include_totals:
+            values_by_category["Käteisnostot"] = self.__count_atm_events()
+            values_by_category["Tulot yht."] = _count_sum_of_events(self.incomes)
+            values_by_category["Menot yht."] = _count_sum_of_events(self.expenses)
+            values_by_category["Tase"] = self.__count_balance()
 
         return values_by_category
