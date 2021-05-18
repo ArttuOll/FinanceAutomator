@@ -43,7 +43,7 @@ def test_sort_incomes(handler):
 
 
 def test_calculate_values_by_category(handler):
-    actual = handler.calculate_values()
+    actual = handler.calculate_values_by_category()
     expected = {
         "Tase": Decimal("20.50"),
         "Käteisnostot": Decimal("-60.0"),
