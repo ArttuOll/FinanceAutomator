@@ -11,7 +11,7 @@ from ..util.report_operations import average_reports, sum_reports
 def _get_reports():
     dict1 = {
             'afds': Decimal('-3'),
-            'Käteisnostot': Decimal('3'),
+            'Kateisnostot': Decimal('3'),
             'Tulot yht.': Decimal('-2'),
             'Muut tulot': Decimal('4'),
             'Menot yht.': Decimal('3'),
@@ -22,7 +22,7 @@ def _get_reports():
 
     dict2 = {
             'afds': Decimal('2'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal ('9'),
             'Muut tulot': Decimal('-20'),
             'Menot yht.': Decimal('6'),
@@ -33,7 +33,7 @@ def _get_reports():
 
     dict3 = {
             'afds': Decimal('3'),
-            'Käteisnostot': Decimal ('-1'),
+            'Kateisnostot': Decimal ('-1'),
             'Tulot yht.': Decimal('3'),
             'Muut tulot': Decimal('-6'),
             'Menot yht.': Decimal('14'),
@@ -44,7 +44,7 @@ def _get_reports():
 
     dict4 = {
             'afds': Decimal( '1'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal('-6'),
             'Muut tulot': Decimal('1'),
             'Menot yht.': Decimal('8'),
@@ -58,7 +58,7 @@ def _get_reports():
 def test_sum_reports(_get_reports):
     expected = {
             'afds': Decimal('3'),
-            'Käteisnostot': Decimal('16'),
+            'Kateisnostot': Decimal('16'),
             'Tulot yht.': Decimal('4'),
             'Muut tulot': Decimal('-21'),
             'Menot yht.': Decimal('31'),
@@ -72,7 +72,7 @@ def test_sum_reports(_get_reports):
 def test_average_reports(_get_reports):
     expected = {
             'afds': Decimal('0.75'),
-            'Käteisnostot': Decimal('4'),
+            'Kateisnostot': Decimal('4'),
             'Tulot yht.': Decimal('1'),
             'Muut tulot': Decimal('-5.25'),
             'Menot yht.': Decimal('7.75'),

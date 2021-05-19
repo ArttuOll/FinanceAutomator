@@ -1,7 +1,7 @@
 [
     {
         "afds": 0,
-        "Käteisnostot": 0,
+        "Kateisnostot": 0,
         "Tulot yht.": "1",
         "Muut tulot": "5",
         "Menot yht.": "-6",
@@ -11,7 +11,7 @@
     },
     {
         "afds": 1,
-        "Käteisnostot": 7,
+        "Kateisnostot": 7,
         "Tulot yht.": "-6",
         "Muut tulot": "1",
         "Menot yht.": "8",
@@ -21,7 +21,7 @@
     },
     {
         "afds": 3,
-        "Käteisnostot": -1,
+        "Kateisnostot": -1,
         "Tulot yht.": "3",
         "Muut tulot": "-6",
         "Menot yht.": "14",
@@ -31,7 +31,7 @@
     },
     {
         "afds": 2,
-        "Käteisnostot": 7,
+        "Kateisnostot": 7,
         "Tulot yht.": "9",
         "Muut tulot": "-20",
         "Menot yht.": "6",
@@ -41,7 +41,7 @@
     },
     {
         "afds": -3,
-        "Käteisnostot": 3,
+        "Kateisnostot": 3,
         "Tulot yht.": "-2",
         "Muut tulot": "4",
         "Menot yht.": "3",

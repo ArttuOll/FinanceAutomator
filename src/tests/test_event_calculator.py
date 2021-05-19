@@ -44,7 +44,7 @@ def test_calculate_values_by_category(handler):
     actual = handler.calculate_values_by_category()
     expected = {
         "Tase": Decimal("20.50"),
-        "Käteisnostot": Decimal("-60.0"),
+        "Kateisnostot": Decimal("-60.0"),
         "Muut menot": Decimal("-10.00"),
         "Muut tulot": Decimal("10.00"),
         "Tulot yht.": Decimal("125.75"),

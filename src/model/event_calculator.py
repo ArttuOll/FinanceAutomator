@@ -83,7 +83,7 @@ class EventCalculator:
         total_expenses = _count_sum_of_events(self.expenses)
 
         values_by_category = self.__count_events_by_category()
-        values_by_category["Käteisnostot"] = self.__count_atm_events()
+        values_by_category["Kateisnostot"] = self.__count_atm_events()
         values_by_category["Muut tulot"] = _count_uncategorised_income(values_by_category, total_income)
         values_by_category["Muut menot"] = _count_uncategorised_expenses(values_by_category, total_expenses)
 

@@ -19,7 +19,7 @@ def handler():
 def test_read_from_date_to_current_month(handler):
     dict1 = {
             'afds': Decimal('-3'),
-            'Käteisnostot': Decimal('3'),
+            'Kateisnostot': Decimal('3'),
             'Tulot yht.': Decimal('-2'),
             'Muut tulot': Decimal('4'),
             'Menot yht.': Decimal('3'),
@@ -30,7 +30,7 @@ def test_read_from_date_to_current_month(handler):
 
     dict2 = {
             'afds': Decimal('2'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal ('9'),
             'Muut tulot': Decimal('-20'),
             'Menot yht.': Decimal('6'),
@@ -40,7 +40,7 @@ def test_read_from_date_to_current_month(handler):
 
     dict3 = {
             'afds': Decimal('3'),
-            'Käteisnostot': Decimal ('-1'),
+            'Kateisnostot': Decimal ('-1'),
             'Tulot yht.': Decimal('3'),
             'Muut tulot': Decimal('-6'),
             'Menot yht.': Decimal('14'),
@@ -51,7 +51,7 @@ def test_read_from_date_to_current_month(handler):
 
     dict4 = {
             'afds': Decimal( '1'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal('-6'),
             'Muut tulot': Decimal('1'),
             'Menot yht.': Decimal('8'),
@@ -68,7 +68,7 @@ def test_read_from_date_to_current_month(handler):
 def test_read_from_date_to_date(handler):
     dict1 = {
             'afds': Decimal('2'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal ('9'),
             'Muut tulot': Decimal('-20'),
             'Menot yht.': Decimal('6'),
@@ -78,7 +78,7 @@ def test_read_from_date_to_date(handler):
 
     dict2 = {
             'afds': Decimal('3'),
-            'Käteisnostot': Decimal ('-1'),
+            'Kateisnostot': Decimal ('-1'),
             'Tulot yht.': Decimal('3'),
             'Muut tulot': Decimal('-6'),
             'Menot yht.': Decimal('14'),
@@ -89,7 +89,7 @@ def test_read_from_date_to_date(handler):
 
     dict3 = {
             'afds': Decimal( '1'),
-            'Käteisnostot': Decimal('7'),
+            'Kateisnostot': Decimal('7'),
             'Tulot yht.': Decimal('-6'),
             'Muut tulot': Decimal('1'),
             'Menot yht.': Decimal('8'),
