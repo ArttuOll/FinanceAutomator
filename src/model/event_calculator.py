@@ -15,24 +15,25 @@ def _count_sum_of_events(events):
     return total
 
 
-def _is_income_category(value, category):
-    return value >= 0 and category != "Tulot yht." and category != "Käteisnostot"
+def _is_income_category(value):
+    return value >= 0
 
 
-def _count_uncategorised_expenses(values_by_category):
-    other_expenses = values_by_category["Menot yht."]
+def _count_uncategorised_expenses(values_by_category, total_expenses):
+    other_expenses = total_expenses
     for category in values_by_category:
-        if values_by_category[category] < 0 and category != "Menot yht.":
-            other_expenses -= values_by_category[category]
+        value = values_by_category[category]
+        if value < 0:
+            other_expenses += abs(value)
 
     return other_expenses
 
 
-def _count_uncategorised_income(values_by_category):
-    other_income = values_by_category["Tulot yht."]
+def _count_uncategorised_income(values_by_category, total_income):
+    other_income = total_income
     for category in values_by_category:
         value = values_by_category[category]
-        if _is_income_category(value, category):
+        if _is_income_category(value):
             other_income -= values_by_category[category]
 
     return other_income
@@ -82,14 +83,17 @@ class EventCalculator:
         """Laskee käyttäjän antamien sekä vakiotilitapahtumakategorioiden
         arvot ja palauttaa ne sanakirjana."""
 
+        total_income = _count_sum_of_events(self.incomes)
+        total_expenses = _count_sum_of_events(self.expenses)
+
         values_by_category = self.__count_events_by_category()
-        values_by_category["Muut tulot"] = _count_uncategorised_income(values_by_category)
-        values_by_category["Muut menot"] = _count_uncategorised_expenses(values_by_category)
+        values_by_category["Käteisnostot"] = self.__count_atm_events()
+        values_by_category["Muut tulot"] = _count_uncategorised_income(values_by_category, total_income)
+        values_by_category["Muut menot"] = _count_uncategorised_expenses(values_by_category, total_expenses)
 
         if include_totals:
-            values_by_category["Käteisnostot"] = self.__count_atm_events()
-            values_by_category["Tulot yht."] = _count_sum_of_events(self.incomes)
-            values_by_category["Menot yht."] = _count_sum_of_events(self.expenses)
+            values_by_category["Tulot yht."] = total_income
+            values_by_category["Menot yht."] = total_expenses
             values_by_category["Tase"] = self.__count_balance()
 
         return values_by_category

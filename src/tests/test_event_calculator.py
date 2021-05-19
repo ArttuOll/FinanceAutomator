@@ -1,6 +1,4 @@
-import sys
 from decimal import Decimal
-from os import path
 
 import pytest
 
