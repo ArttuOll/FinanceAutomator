@@ -59,3 +59,11 @@ def avg(configs, start_date, end, title):
 def graph(configs, start_date, category, end):
     graph_drawer = GraphDrawer(configs)
     graph_drawer.draw(start_date, category, end)
+
+@cli.command(short_help="Tulosta tulot, menot ja säästöt JSON-taulukkona.")
+@click.argument("transactions_file", type=click.Path(exists=True))
+@pass_configs
+def export(configs, transactions_file):
+    configs.set_config("transactions_file", transactions_file)
+    report_writer = ReportWriter(configs)
+    print(report_writer.export_event_types_as_json())
