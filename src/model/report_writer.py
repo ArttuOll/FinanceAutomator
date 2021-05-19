@@ -31,14 +31,14 @@ class ReportWriter:
         if self.configs.get_config("verbose"):
             self._print_human_readable_report(values_by_category)
 
-    def _get_values_by_category(self):
+    def _get_values_by_category(self, include_totals=True):
         event_extractor = EventExtractor()
         transactions_file = self.configs.get_config("transactions_file")
         events = event_extractor.extract_events_from_file(transactions_file)
 
         categories_tags = self.configs.get_config("categories_tags")
         event_calculator = EventCalculator(events, categories_tags)
-        return event_calculator.calculate_values()
+        return event_calculator.calculate_values_by_category(include_totals=include_totals)
 
     def write_avg_report(self, start_date, end_date="", title=""):
         """Kirjoittaa raportin, joka sisältää kunkin kulu- ja menokategorian keskiarvot aikavälillä
@@ -99,6 +99,29 @@ class ReportWriter:
         # joita ei voida serialisoida!
         try:
             with open(filepath, "w", encoding="UTF-8") as report_file:
-                json.dump(reports, report_file, ensure_ascii=False, indent=4, default=str)
+                json.dump(reports, report_file, ensure_ascii=False, default=str)
         except IOError as error:
             print("Virhe yritettäessä kirjoittaa koneluettavaa raporttia: ", error, file=stderr)
+
+    def _get_income_values_by_category(self):
+        return self._filter_values_by_category(lambda category, value: value >= 0 and category != "Saastot")
+
+    def _get_expenses_values_by_category(self):
+        return self._filter_values_by_category(lambda category, value: value < 0 and category != "Saastot")
+
+    def _get_savings_values_by_category(self):
+        return self._filter_values_by_category(lambda category, value: category == "Saastot")
+
+    def _filter_values_by_category(self, filter_expression):
+        values_by_category = self._get_values_by_category(include_totals=False)
+        results = {category: value for category, value in values_by_category.items() if filter_expression(category, value)}
+        return results
+
+    def export_event_types_as_json(self):
+        income_json = self._get_income_values_by_category()
+        expenses_json = self._get_expenses_values_by_category()
+        savings_json = self._get_savings_values_by_category()
+        events_by_type = [{ "type": "income", "data": income_json },
+                          { "type": "expenses" , "data": expenses_json },
+                          { "type": "savings", "data": savings_json}]
+        return json.dumps(events_by_type, default=str)
