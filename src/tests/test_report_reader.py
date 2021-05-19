@@ -3,12 +3,13 @@ import datetime
 from decimal import Decimal
 
 import pytest
+from os import path
 
 from ..model.report_reader import ReportReader
 
 START_DATE = "2020-12-24"
 END_DATE = "2021-2-24"
-SAVE_DIR = "./resources"
+SAVE_DIR = path.join(path.dirname(__file__), "./resources")
 
 @pytest.fixture()
 def handler():
