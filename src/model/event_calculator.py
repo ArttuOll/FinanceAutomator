@@ -15,10 +15,6 @@ def _count_sum_of_events(events):
     return total
 
 
-def _is_income_category(value):
-    return value >= 0
-
-
 def _count_uncategorised_expenses(values_by_category, total_expenses):
     other_expenses = total_expenses
     for category in values_by_category:
@@ -33,7 +29,7 @@ def _count_uncategorised_income(values_by_category, total_income):
     other_income = total_income
     for category in values_by_category:
         value = values_by_category[category]
-        if _is_income_category(value):
+        if value >= 0:
             other_income -= values_by_category[category]
 
     return other_income
