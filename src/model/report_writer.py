@@ -3,6 +3,7 @@ import json
 from datetime import datetime
 from os.path import join
 from sys import stderr
+from decimal import Decimal
 
 from ..model.event_calculator import EventCalculator
 from ..model.event_extractor import EventExtractor
@@ -131,4 +132,4 @@ class ReportWriter:
                               ]
                             }
                          ]
-        return json.dumps(events_by_type, default=str)
+        return json.dumps(events_by_type, default=float)
