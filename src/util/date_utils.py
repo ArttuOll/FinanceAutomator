@@ -26,3 +26,7 @@ def get_current_month_tag():
         return "Marras"
     if current_month == 12:
         return "Joulu"
+
+def get_timestamp():
+    date_format = "%Y-%m-%d"
+    return datetime.now().strftime(date_format)

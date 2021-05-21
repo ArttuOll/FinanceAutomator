@@ -9,7 +9,7 @@ from ..model.event_extractor import EventExtractor
 from ..util.report_operations import average_reports, sum_reports
 from .report_reader import ReportReader
 from ..util.report_builders import build_human_readable_report, build_machine_readable_report
-from ..util.date_utils import get_current_month_tag
+from ..util.date_utils import get_current_month_tag, get_timestamp
 
 
 class ReportWriter:
@@ -18,8 +18,7 @@ class ReportWriter:
     def __init__(self, configs):
         self.configs = configs
         self.report_reader = ReportReader(configs.get_config("save_dir"))
-        self.date_format = "%Y-%m-%d"
-        self.timestamp = datetime.now().strftime(self.date_format)
+        self.timestamp = get_timestamp()
 
     def write_report(self):
         """Kirjoittaa ihmis- ja koneluettavan raportin asetuksien kohdassa 'save_dir' määritettyyn
