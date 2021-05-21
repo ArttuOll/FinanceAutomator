@@ -9,6 +9,7 @@ from ..model.event_extractor import EventExtractor
 from ..util.report_operations import average_reports, sum_reports
 from .report_reader import ReportReader
 from ..util.report_builders import build_human_readable_report, build_machine_readable_report
+from ..util.date_utils import get_current_month_tag
 
 
 class ReportWriter:
@@ -121,7 +122,14 @@ class ReportWriter:
         income_json = self._get_income_values_by_category()
         expenses_json = self._get_expenses_values_by_category()
         savings_json = self._get_savings_values_by_category()
-        events_by_type = [{ "type": "income", "data": income_json },
-                          { "type": "expenses" , "data": expenses_json },
-                          { "type": "savings", "data": savings_json}]
+        current_month_tag = get_current_month_tag()
+        events_by_type = [
+                            { "month": current_month_tag, 
+                              "data": [
+                                { "type": "income", "data": income_json },
+                                { "type": "expenses" , "data": expenses_json },
+                                { "type": "savings", "data": savings_json}
+                              ]
+                            }
+                         ]
         return json.dumps(events_by_type, default=str)
