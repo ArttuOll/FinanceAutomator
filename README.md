@@ -86,6 +86,7 @@ Options:
 
 Commands:
   avg            Laske kulu- ja menokategorioiden keskiarvot aikaväliä kohti
+  export         Tulosta tulot, menot ja säästöt JSON-taulukkona
   graph          Piirrä kuvaaja kategorian arvoista aikavälillä
   guided-config  Suorita ohjattu asetustiedoston luominen
   read           Lue tilitapahtumatiedosto ja kirjoita siitä raportti
